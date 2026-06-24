@@ -89,6 +89,10 @@
     .modal-btn.primary:hover { background: #fcd34d; }
     .modal-btn.secondary { background: #27272a; color: #d4d4d8; }
     .modal-btn.secondary:hover { background: #3f3f46; }
+    .modal-btn.ghost { background: transparent; color: #71717a; border: 1px solid #3f3f46; }
+    .modal-btn.ghost:hover { color: #a1a1aa; border-color: #52525b; }
+    .login-divider { display: flex; align-items: center; gap: 0.6rem; margin: 1rem 0; color: #52525b; font-size: 0.78rem; }
+    .login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: #27272a; }
     .modal-note { font-size: 0.8rem; color: #71717a; margin-top: 0.75rem; line-height: 1.5; }
     .modal-status { font-size: 0.85rem; padding: 0.6rem; border-radius: 0.375rem; margin: 0.5rem 0; }
     .modal-status.warn { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid #fbbf24; }
@@ -107,6 +111,12 @@
     .total-count { font-size: 0.8rem; color: #71717a; font-weight: 600; }
     .compare-inline { background: transparent; color: #a1a1aa; border: 1px solid #52525b; border-radius: 0.375rem; padding: 0.35rem 0.7rem; font-size: 0.8rem; cursor: pointer; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
     .compare-inline:hover { border-color: #a1a1aa; color: #fff; }
+    .btn-row { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .icon-btn { border: none; border-radius: 0.375rem; padding: 0.35rem 0.6rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+    .icon-btn.spotify { background: #1db954; color: #000; }
+    .icon-btn.spotify:hover { background: #1ed760; }
+    .icon-btn.lfm { background: #d51007; color: #fff; }
+    .icon-btn.lfm:hover { background: #e8140a; }
     /* Admin-lenke i footer */
     .footer .admin-link { font-size: 0.7rem; color: #3f3f46; margin-top: 0.75rem; cursor: pointer; display: inline-block; }
     .footer .admin-link:hover { color: #71717a; }
@@ -120,6 +130,8 @@
     .admin-bar { display: flex; gap: 0.5rem; margin-top: 1rem; }
     .admin-bar button { flex: 1; }
     .warn-box { background: rgba(220,38,38,0.15); border: 1px solid #dc2626; color: #fca5a5; padding: 0.6rem; border-radius: 0.375rem; font-size: 0.85rem; margin-bottom: 1rem; }
+    .cap-warn { background: rgba(234,88,12,0.15); border: 1px solid #ea580c; color: #fdba74; border-radius: 0.5rem; padding: 0.8rem 1rem; font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.5rem; }
+    .cap-warn strong { color: #fff; }
     .performance-right { display: flex; gap: 0.5rem; align-items: flex-start; flex-shrink: 0; flex-col; }
     .time-display { font-size: 1.5rem; font-weight: 700; color: #52525b; min-width: 60px; text-align: right; }
     .compare-btn { background: transparent; color: #52525b; border: 1px solid #52525b; border-radius: 0.375rem; padding: 0.4rem 0.6rem; transition: all 0.2s; font-size: 0.9rem; }
@@ -197,19 +209,22 @@
   <script>
     // ============================================================
     // VERSJON — legg til ny oppføring øverst i CHANGELOG ved hver innsjekking
-    const APP_VERSION = 'v2.1.0-beta';
+    const APP_VERSION = 'v2.2.0-beta';
     const APP_BUILD = '2026-06-24';
     const CHANGELOG = [
+      { version: 'v2.2.0-beta', date: '2026-06-24', changes: [
+        'Appen husker deg fra sist — automatisk pålogging',
+        'Egen «Opprett ny bruker» med duplikatsjekk',
+        'Under 15 brukere er alle automatisk venner (advarsel ved nr. 16)',
+        'Venner vises PÅ som standard',
+        'LFM-knapp (Last.fm) ved siden av Spotify-knapp'
+      ]},
       { version: 'v2.1.0-beta', date: '2026-06-24', changes: [
-        'Venner: velg fra liste over registrerte brukere',
-        '«Favoritter til:» viser venners initialer + totaltall på band',
-        'Av/på-bryter for å vise venner på kortene',
-        '«Sammenlignes med…» (tidligere Compare)',
-        'Admin-panel i footer for å rydde brukere (passord i Netlify)'
+        'Venner fra liste, «Favoritter til:» med initialer + totaltall',
+        'Admin-panel i footer for å rydde brukere'
       ]},
       { version: 'v2.0.0-beta', date: '2026-06-24', changes: [
-        'FLERBRUKER: favoritter lagres i skyen under et brukernavn',
-        'Logg på med brukernavn, se venners favoritter, lokal fallback'
+        'FLERBRUKER: favoritter i skyen under brukernavn, lokal fallback'
       ]},
       { version: 'v1.7.0', date: '2026-06-24', changes: [
         'Ryddet OCR-feil i bandnavn mot offisiell lineup',
@@ -415,8 +430,11 @@
     let viewingFriend = null;      // { name, favorites } når man ser på en venn
     let myFriends = [];            // mine valgte venner (brukernavn)
     let allUsers = [];             // alle registrerte brukere [{name,count,updated}]
-    let showFriendsOnCards = false;// av/på: vis "Favoritter til:" på kort
+    let showFriendsOnCards = true; // av/på: vis "Favoritter til:" på kort (default PÅ)
     let bandFavCounts = {};        // { bandnavn: { total, friends:[navn] } }
+    const AUTO_VENNER_UNDER = 15;  // under denne grensen er alle automatisk venner
+    let autoFriendMode = false;    // true når < AUTO_VENNER_UNDER brukere
+    let capWarningShown = false;   // har vi vist 15+-advarselen?
 
     // Lokal lagring (fallback + cache)
     function loadLocalFavorites() {
@@ -462,20 +480,33 @@
       const data = await res.json();
       return data.users || [];
     }
-    // Bygg tellinger per band: hvor mange totalt + hvilke av mine venner
+    // Bygg tellinger per band: hvor mange totalt + hvilke venner
+    // Under AUTO_VENNER_UNDER brukere regnes ALLE som venner (visning).
     async function buildBandCounts() {
       bandFavCounts = {};
       try {
         const users = await fetchAllUsers();
         allUsers = users;
-        // Hent hver brukers favoritter (enkel variant — OK for vennegjeng)
+        autoFriendMode = users.length < AUTO_VENNER_UNDER;
+        // Hvem teller som "venn" for visning:
+        const friendSet = autoFriendMode
+          ? new Set(users.map(u => u.name))   // alle er venner
+          : new Set(myFriends);               // bare valgte venner
         for (const u of users) {
+          if (u.name === currentUser) { /* ikke vis deg selv som "venn" */ }
           const data = await fetchCloudFavorites(u.name);
           (data.favorites || []).forEach(band => {
             if (!bandFavCounts[band]) bandFavCounts[band] = { total: 0, friends: [] };
             bandFavCounts[band].total++;
-            if (myFriends.includes(u.name)) bandFavCounts[band].friends.push(u.name);
+            if (u.name !== currentUser && friendSet.has(u.name)) {
+              bandFavCounts[band].friends.push(u.name);
+            }
           });
+        }
+        // Advarsel når vi nettopp passerte grensen (16+ brukere)
+        if (!autoFriendMode && users.length >= AUTO_VENNER_UNDER && !capWarningShown) {
+          capWarningShown = true;
+          showCapWarning(users.length);
         }
       } catch (e) { /* nett nede — ingen tellinger, kort vises rene */ }
     }
@@ -664,10 +695,10 @@
           return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${icon} ${p.band}</div><div class="performance-genres">${label}</div><div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div></div></div>`;
         }
 
-        // Venne-rad (Variant 1) — vises bare når showFriendsOnCards er på
+        // Venne-rad (Variant 1) med LFM + Spotify-knapper til høyre
         let friendsBar = '';
         const counts = bandFavCounts[p.band];
-        const compareBtn = `<button class="compare-inline" data-idx="${i}" data-action="compare">Sammenlignes med…</button>`;
+        const btnFamily = `<div class="btn-row"><button class="icon-btn lfm" data-idx="${i}" data-action="compare" title="Lignende artister (Last.fm)">♫ LFM</button><button class="icon-btn spotify" data-idx="${i}" data-action="tracks" title="Topplåter (Spotify)">♪</button></div>`;
         if (showFriendsOnCards) {
           let leftHtml = '<span class="fav-label">Favoritter til:</span>';
           if (counts && counts.total > 0) {
@@ -677,18 +708,17 @@
               const others = counts.total - counts.friends.length;
               leftHtml += `<span class="total-count">${others > 0 ? '+' + others + ' totalt' : ''}</span>`;
             } else {
-              leftHtml = `<span class="fav-label" style="color:#71717a;">Favoritter til: ${counts.total} totalt (ingen venner ennå)</span>`;
+              leftHtml = `<span class="fav-label" style="color:#71717a;">Favoritter til: ${counts.total} totalt</span>`;
             }
           } else {
             leftHtml = `<span class="fav-label" style="color:#52525b;">Favoritter til: ingen ennå</span>`;
           }
-          friendsBar = `<div class="friends-bar"><div class="friends-left">${leftHtml}</div>${compareBtn}</div>`;
+          friendsBar = `<div class="friends-bar"><div class="friends-left">${leftHtml}</div>${btnFamily}</div>`;
         }
 
-        // Tracks-knapp + stjerne + tid øverst til høyre. Compare ligger i friendsBar
-        // (eller, hvis venne-visning er av, vis compare i høyre kolonne som før).
-        const rightCompare = showFriendsOnCards ? '' : `<button class="compare-btn" data-idx="${i}" data-action="compare">Sammenlignes med…</button>`;
-        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div>${friendsBar}</div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div>${rightCompare}<button class="compare-btn" data-idx="${i}" data-action="tracks">♪</button></div></div>`;
+        // Når venne-visning er AV: vis knappene i høyre kolonne i stedet
+        const rightButtons = showFriendsOnCards ? '' : btnFamily;
+        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div>${friendsBar}</div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div>${rightButtons}</div></div>`;
       }).join('');
 
       window.currentPerfs = perfs;
@@ -789,17 +819,19 @@
       }
     }
 
-    // Onboarding / innlogging
+    // Onboarding / innlogging — to veier: logg på eksisterende, eller opprett ny
     function showLoginModal() {
       const body = `
         <div class="form-field">
-          <label>Velg et brukernavn (3–30 tegn)</label>
+          <label>Logg på med brukernavnet ditt</label>
           <input type="text" id="userInput" placeholder="f.eks. Rune" maxlength="30" autocomplete="off">
         </div>
         <div id="loginStatus"></div>
-        <button class="modal-btn primary" id="loginConfirm">Logg på / opprett</button>
-        <button class="modal-btn secondary" id="loginLocal">Start lokalt (uten innlogging)</button>
-        <p class="modal-note">Åpen pålogging uten passord. Favorittene dine lagres i skyen under brukernavnet, så du når dem fra flere enheter og venner kan se hva du skal se på. Velg «Start lokalt» hvis nettet er tregt.</p>
+        <button class="modal-btn primary" id="loginConfirm">Logg på</button>
+        <div class="login-divider">ny her?</div>
+        <button class="modal-btn secondary" id="createNew">+ Opprett ny bruker</button>
+        <button class="modal-btn ghost" id="loginLocal">📵 Start lokalt (uten innlogging)</button>
+        <p class="modal-note">Åpen pålogging uten passord. Favoritter lagres i skyen under brukernavnet, så du når dem fra flere enheter og venner ser hva du skal se på. Appen husker deg til neste gang.</p>
       `;
       const modal = showModal('Logg på', 'Sky-favoritter', body);
       const input = modal.querySelector('#userInput');
@@ -810,27 +842,55 @@
       modal.querySelector('#loginLocal').addEventListener('click', () => {
         startLocalMode(); modal.remove(); renderUserBar(); render();
       });
-
+      modal.querySelector('#createNew').addEventListener('click', () => {
+        modal.remove(); showCreateUserModal();
+      });
       modal.querySelector('#loginConfirm').addEventListener('click', async () => {
         const name = input.value.trim();
         if (name.length < 3) { status.innerHTML = '<div class="modal-status warn">Brukernavn må være minst 3 tegn.</div>'; return; }
-        status.innerHTML = '<div class="modal-status info">Sjekker…</div>';
+        status.innerHTML = '<div class="modal-status info">Logger på…</div>';
+        try {
+          await loginUser(name);
+          if (showFriendsOnCards) await buildBandCounts();
+          modal.remove(); renderUserBar(); render();
+        } catch (e) {
+          status.innerHTML = `<div class="modal-status warn">Får ikke kontakt med skyen (${e.message}). Du kan starte lokalt.</div>`;
+        }
+      });
+    }
+
+    // Opprett ny bruker — med duplikatsjekk
+    function showCreateUserModal() {
+      const body = `
+        <div class="form-field">
+          <label>Velg et nytt brukernavn (3–30 tegn)</label>
+          <input type="text" id="newUser" placeholder="f.eks. Kari" maxlength="30" autocomplete="off">
+        </div>
+        <div id="createStatus"></div>
+        <button class="modal-btn primary" id="createConfirm">Opprett</button>
+        <button class="modal-btn ghost" id="backToLogin">← Tilbake</button>
+      `;
+      const modal = showModal('Opprett bruker', 'Velg et ledig brukernavn', body);
+      const input = modal.querySelector('#newUser');
+      const status = modal.querySelector('#createStatus');
+      input.focus();
+      modal.querySelector('#backToLogin').addEventListener('click', () => { modal.remove(); showLoginModal(); });
+      modal.querySelector('#createConfirm').addEventListener('click', async () => {
+        const name = input.value.trim();
+        if (name.length < 3) { status.innerHTML = '<div class="modal-status warn">Minst 3 tegn.</div>'; return; }
+        status.innerHTML = '<div class="modal-status info">Sjekker om navnet er ledig…</div>';
         try {
           const data = await fetchCloudFavorites(name);
-          if (data.favorites && data.favorites.length > 0) {
-            // Navnet finnes med favoritter — la bruker bekrefte
-            status.innerHTML = `<div class="modal-status warn">Navnet «${name}» finnes med ${data.favorites.length} favoritter.<br>Er det deg? Da henter vi dem. Hvis ikke, velg et annet navn.</div>`;
-            const confirmBtn = modal.querySelector('#loginConfirm');
-            confirmBtn.textContent = `Ja, fortsett som ${name}`;
-            confirmBtn.onclick = async () => {
-              await loginUser(name); modal.remove(); renderUserBar(); render();
-            };
-          } else {
-            // Ledig (eller tomt) — logg på direkte
-            await loginUser(name); modal.remove(); renderUserBar(); render();
+          const exists = data && ((data.favorites && data.favorites.length > 0) || data.updated);
+          if (exists) {
+            status.innerHTML = `<div class="modal-status warn">«${name}» er allerede tatt. Velg et annet navn — eller gå tilbake og logg på som ${name} hvis det er deg.</div>`;
+            return;
           }
+          await loginUser(name);
+          if (showFriendsOnCards) await buildBandCounts();
+          modal.remove(); renderUserBar(); render();
         } catch (e) {
-          status.innerHTML = `<div class="modal-status warn">Får ikke kontakt med skyen (${e.message}). Du kan starte lokalt i stedet.</div>`;
+          status.innerHTML = `<div class="modal-status warn">Får ikke kontakt med skyen (${e.message}).</div>`;
         }
       });
     }
@@ -903,6 +963,18 @@
       } catch (e) {
         content.innerHTML = `<div class="modal-status warn">Kunne ikke hente brukere (${e.message}).</div>`;
       }
+    }
+
+    // Advarsel når brukertallet passerer grensen
+    function showCapWarning(count) {
+      const body = `
+        <div class="cap-warn">Det er nå <strong>${count} brukere</strong> i appen. De du allerede følger er fortsatt vennene dine, men <strong>nye brukere legges ikke til automatisk</strong> lenger. Vil du følge noen av de nye, må du velge dem under «Venner».</div>
+        <button class="modal-btn primary" id="capOk">Skjønner</button>
+        <button class="modal-btn secondary" id="capManage">Åpne «Venner» nå</button>
+      `;
+      const modal = showModal('⚠️ Mer enn ' + AUTO_VENNER_UNDER + ' brukere', 'Auto-venner er slått av', body);
+      modal.querySelector('#capOk').addEventListener('click', () => modal.remove());
+      modal.querySelector('#capManage').addEventListener('click', () => { modal.remove(); showManageFriendsModal(); });
     }
 
     // ===== ADMIN =====
@@ -987,11 +1059,15 @@
       render();
       const saved = getStoredUser();
       if (saved) {
-        // Prøv å logge på lagret bruker i bakgrunnen
-        try { await loginUser(saved); renderUserBar(); render(); }
+        // Husker deg fra sist — logg automatisk på
+        try {
+          await loginUser(saved);
+          renderUserBar(); render();
+          if (showFriendsOnCards) { await buildBandCounts(); render(); }
+        }
         catch (e) { startLocalMode(); renderUserBar(); }
       } else {
-        // Første gang — vis innloggingsvalg (men appen funker lokalt uansett)
+        // Første gang — vis innloggingsvalg (appen funker lokalt uansett)
         showLoginModal();
       }
     }
