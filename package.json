@@ -1,0 +1,9 @@
+{
+  "name": "tonsofrock",
+  "version": "1.0.0",
+  "description": "Tons of Rock 2026 festival app — flerbrukerversjon med sky-favoritter",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

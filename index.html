@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>Tons of Rock 2026</title>
+
+  <!-- iOS fullscreen web app -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Tons of Rock">
+  <meta name="theme-color" content="#000000">
+
+  <!-- Home screen icon (embedded SVG, no external file needed) -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23000000'/%3E%3Ctext x='90' y='70' font-family='Georgia,serif' font-size='30' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3ETONS%3C/text%3E%3Ctext x='90' y='110' font-family='Georgia,serif' font-size='30' font-weight='bold' fill='%23dc2626' text-anchor='middle'%3EOF%3C/text%3E%3Ctext x='90' y='150' font-family='Georgia,serif' font-size='30' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EROCK%3C/text%3E%3C/svg%3E">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+    .header { background: linear-gradient(to bottom, #27272a, #000); border-bottom: 1px solid #27272a; padding: 2rem 1rem; }
+    .header h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .header p { color: #999; font-size: 0.9rem; }
+    .nav-container { background: #000; border-bottom: 1px solid #27272a; padding: 1rem; }
+    .nav-label { font-size: 0.75rem; text-transform: uppercase; color: #71717a; margin-bottom: 0.5rem; display: block; font-weight: 600; }
+    .button-group { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; }
+    /* Segmentert scene-kontroll: alle scener på én linje, deler bredden likt */
+    .segmented { display: flex; gap: 0.25rem; background: #18181b; border-radius: 0.5rem; padding: 0.25rem; }
+    .segmented button { flex: 1; padding: 0.5rem 0.25rem; font-size: 0.8rem; font-weight: 700; background: transparent; color: #a1a1aa; border-radius: 0.375rem; white-space: nowrap; min-width: 0; }
+    .segmented button.active { color: #fff; }
+    .segmented button.seg-all.active { background: #52525b; }
+    .segmented button.seg-scream.active { background: #dc2626; }
+    .segmented button.seg-vampire.active { background: #9333ea; }
+    .segmented button.seg-moonlight.active { background: #2563eb; }
+    .segmented button.seg-storm.active { background: #57534e; }
+    .fav-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .fav-row button { flex: 1; }
+    button { padding: 0.5rem 1rem; border: none; border-radius: 0.375rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-size: 0.9rem; }
+    .btn-day { background: #27272a; color: #d4d4d8; }
+    .btn-day.active { background: #dc2626; color: #fff; }
+    .btn-day:hover { background: #3f3f46; }
+    .day-header { background: #27272a; padding: 1rem; margin: 1rem 0; border-radius: 0.5rem; text-align: center; position: relative; }
+    .day-header h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .day-header p { color: #a1a1aa; font-size: 0.9rem; }
+    .day-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: #52525b; color: #fff; border: none; border-radius: 0.375rem; padding: 0.5rem 0.75rem; cursor: pointer; font-size: 1.25rem; transition: all 0.2s; }
+    .day-nav-btn:hover { background: #71717a; }
+    .day-nav-btn.prev { left: 1rem; }
+    .day-nav-btn.next { right: 1rem; }
+    .btn-stage, .btn-genre { background: #27272a; color: #a1a1aa; font-size: 0.85rem; }
+    .btn-stage.active, .btn-genre.active { background: #52525b; color: #fff; }
+    .btn-stage:hover, .btn-genre:hover { background: #3f3f46; }
+    .content { padding: 1.5rem; max-width: 56rem; margin: 0 auto; }
+    .no-results { text-align: center; padding: 3rem 1rem; color: #71717a; }
+    .performance { border: 2px solid; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; transition: all 0.2s; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; background: #18181b; }
+    .performance:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
+    .performance-info { flex: 1; min-width: 0; }
+    .performance-band { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; word-break: break-word; color: #fff; }
+    .performance-genres { font-size: 0.75rem; color: #a1a1aa; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+    .performance-meta { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.9rem; align-items: center; }
+    .stage-badge { font-weight: 800; font-size: 1.05rem; padding: 0.3rem 0.7rem 0.3rem 0.5rem; border-radius: 0.375rem; background: #000; color: #fff; border-left: 4px solid; display: inline-block; }
+    /* Kompakt scene-tag på kortet: liten farget firkant med initial */
+    .stage-tag { font-weight: 800; font-size: 0.8rem; padding: 0.2rem 0.5rem; border-radius: 0.3rem; color: #fff; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .stage-tag.scream { background: #dc2626; }
+    .stage-tag.vampire { background: #9333ea; }
+    .stage-tag.moonlight { background: #2563eb; }
+    .stage-tag.storm { background: #57534e; }
+    .time-badge { color: #d4d4d8; font-weight: 600; }
+    .date-badge { color: #71717a; }
+    .star-btn { background: transparent; border: none; cursor: pointer; font-size: 1.6rem; line-height: 1; padding: 0.2rem 0.3rem; transition: transform 0.15s; flex-shrink: 0; color: #52525b; }
+    .star-btn:hover { transform: scale(1.2); }
+    .star-btn.active { color: #fbbf24; }
+    .btn-fav { background: #27272a; color: #fbbf24; }
+    .btn-fav.active { background: #fbbf24; color: #000; }
+    .fav-count { font-size: 0.75rem; opacity: 0.7; }
+    /* Brukernavn-banner øverst */
+    .user-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.6rem 1rem; background: #18181b; border-bottom: 1px solid #27272a; font-size: 0.85rem; }
+    .user-bar .who { color: #d4d4d8; }
+    .user-bar .who strong { color: #fbbf24; }
+    .user-bar .who .local-tag { color: #71717a; font-size: 0.75rem; }
+    .user-bar button { background: #27272a; color: #a1a1aa; border: none; padding: 0.35rem 0.7rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .user-bar button:hover { background: #3f3f46; color: #fff; }
+    /* Modal-skjema */
+    .form-field { margin-bottom: 1rem; }
+    .form-field label { display: block; font-size: 0.85rem; color: #a1a1aa; margin-bottom: 0.4rem; }
+    .form-field input { width: 100%; padding: 0.6rem 0.75rem; background: #000; border: 1px solid #3f3f46; border-radius: 0.375rem; color: #fff; font-size: 1rem; }
+    .form-field input:focus { outline: none; border-color: #fbbf24; }
+    .modal-btn { display: block; width: 100%; padding: 0.7rem; border-radius: 0.375rem; font-weight: 700; cursor: pointer; border: none; margin-top: 0.5rem; font-size: 0.95rem; }
+    .modal-btn.primary { background: #fbbf24; color: #000; }
+    .modal-btn.primary:hover { background: #fcd34d; }
+    .modal-btn.secondary { background: #27272a; color: #d4d4d8; }
+    .modal-btn.secondary:hover { background: #3f3f46; }
+    .modal-note { font-size: 0.8rem; color: #71717a; margin-top: 0.75rem; line-height: 1.5; }
+    .modal-status { font-size: 0.85rem; padding: 0.6rem; border-radius: 0.375rem; margin: 0.5rem 0; }
+    .modal-status.warn { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid #fbbf24; }
+    .modal-status.info { background: rgba(96,165,250,0.1); color: #60a5fa; }
+    .viewing-banner { background: rgba(96,165,250,0.15); border: 1px solid #3b82f6; border-radius: 0.5rem; padding: 0.75rem 1rem; margin: 1rem 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .viewing-banner .vb-text { color: #93c5fd; font-size: 0.9rem; }
+    .viewing-banner .vb-text strong { color: #fff; }
+    .viewing-banner button { background: #2563eb; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .performance-right { display: flex; gap: 0.5rem; align-items: flex-start; flex-shrink: 0; flex-col; }
+    .time-display { font-size: 1.5rem; font-weight: 700; color: #52525b; min-width: 60px; text-align: right; }
+    .compare-btn { background: transparent; color: #52525b; border: 1px solid #52525b; border-radius: 0.375rem; padding: 0.4rem 0.6rem; transition: all 0.2s; font-size: 0.9rem; }
+    .compare-btn:hover { color: #e4e4e7; border-color: #e4e4e7; background: #27272a; }
+    .stage-scream { border-color: #ef4444; }
+    .stage-scream .stage-badge { border-left-color: #ef4444; }
+    .stage-vampire { border-color: #a855f7; }
+    .stage-vampire .stage-badge { border-left-color: #a855f7; }
+    .stage-moonlight { border-color: #3b82f6; }
+    .stage-moonlight .stage-badge { border-left-color: #3b82f6; }
+    .stage-storm { border-color: #a8a29e; }
+    .stage-storm .stage-badge { border-left-color: #a8a29e; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+    .modal { background: #18181b; border: 1px solid #27272a; border-radius: 0.5rem; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 2rem; position: relative; }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: #27272a; border: none; color: #fff; width: 2rem; height: 2rem; border-radius: 0.25rem; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
+    .modal-close:hover { background: #3f3f46; }
+    .modal h2 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .modal-subtitle { color: #71717a; font-size: 0.9rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .similar-section h3 { font-size: 1.1rem; margin: 1.5rem 0 1rem; color: #e4e4e7; border-bottom: 1px solid #27272a; padding-bottom: 0.5rem; }
+    .similar-band { padding: 0.75rem; background: #27272a; border-radius: 0.375rem; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.2s; }
+    .similar-band:hover { background: #3f3f46; transform: translateX(4px); }
+    .similar-band-name { font-weight: 600; color: #fff; }
+    .similar-band-genres { font-size: 0.75rem; color: #71717a; margin-top: 0.25rem; }
+    .similar-band-time { font-size: 0.75rem; color: #52525b; margin-top: 0.25rem; }
+    .tracks-section { display: flex; flex-direction: column; gap: 0.75rem; }
+    .track-item { padding: 1rem; background: #27272a; border-radius: 0.375rem; text-decoration: none; color: #fff; transition: all 0.2s; border: 1px solid #3f3f46; display: block; }
+    .track-item:hover { background: #3f3f46; border-color: #52525b; transform: translateX(4px); }
+    .track-name { font-weight: 600; margin-bottom: 0.5rem; }
+    .track-link { font-size: 0.8rem; color: #60a5fa; }
+    .track-item:hover .track-link { color: #93c5fd; }
+    .footer { border-top: 1px solid #27272a; padding: 1.5rem; text-align: center; color: #71717a; font-size: 0.9rem; margin-top: 2rem; }
+    .footer .version { font-size: 0.75rem; color: #52525b; margin-top: 0.5rem; font-family: ui-monospace, 'SF Mono', Menlo, monospace; cursor: pointer; display: inline-block; transition: color 0.2s; }
+    .footer .version:hover { color: #a1a1aa; }
+    .footer .version strong { color: #71717a; }
+    .changelog-entry { margin-bottom: 1.25rem; }
+    .changelog-entry h4 { font-size: 0.95rem; color: #fff; margin-bottom: 0.4rem; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+    .changelog-entry h4 .cl-date { color: #71717a; font-weight: 400; font-size: 0.8rem; margin-left: 0.5rem; }
+    .changelog-entry ul { list-style: none; padding: 0; }
+    .changelog-entry li { color: #d4d4d8; font-size: 0.85rem; padding: 0.2rem 0 0.2rem 1rem; position: relative; }
+    .changelog-entry li::before { content: '▸'; position: absolute; left: 0; color: #52525b; }
+    .changelog-entry.current h4 { color: #fbbf24; }
+    .hidden { display: none; }
+    @media (max-width: 640px) {
+      .header h1 { font-size: 1.875rem; }
+      .performance { flex-direction: column; }
+      .performance-right { flex-direction: row; justify-content: space-between; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>TONS OF ROCK</h1>
+    <p>June 24–27, 2026 • Oslo</p>
+  </div>
+
+  <div class="user-bar" id="userBar"></div>
+
+  <div id="dayNav" class="nav-container">
+    <span class="nav-label">Day</span>
+    <div class="button-group" id="dayButtons"></div>
+  </div>
+
+  <div id="stageNav" class="nav-container">
+    <div id="stageButtons"></div>
+  </div>
+
+  <div class="content" id="content"></div>
+
+  <div class="footer">
+    Tons of Rock Festival Schedule 2026
+    <div class="version" id="versionInfo"></div>
+  </div>
+
+  <script>
+    // ============================================================
+    // VERSJON — legg til ny oppføring øverst i CHANGELOG ved hver innsjekking
+    const APP_VERSION = 'v2.0.0-beta';
+    const APP_BUILD = '2026-06-24';
+    const CHANGELOG = [
+      { version: 'v2.0.0-beta', date: '2026-06-24', changes: [
+        'FLERBRUKER: favoritter lagres nå i skyen under et brukernavn',
+        'Logg på med brukernavn (åpen pålogging, ingen passord)',
+        'Se hva venner skal se på via deres brukernavn',
+        'Duplikatsjekk på brukernavn ved innlogging',
+        'Fallback til lokal modus ved tregt/manglende nett'
+      ]},
+      { version: 'v1.7.0', date: '2026-06-24', changes: [
+        'Ryddet OCR-feil i bandnavn mot offisiell lineup',
+        'Alle 72 navn verifisert mot festivalens program'
+      ]},
+      { version: 'v1.6.0', date: '2026-06-24', changes: [
+        'Klikkbart versjonsnummer med full endringslogg',
+        'Rettet bandnavn: Angel → Angell, med riktig sjanger'
+      ]},
+      { version: 'v1.5.0', date: '2026-06-24', changes: [
+        'Rettet rådatafeil: Evanscene → Grandson på Moonlight torsdag',
+        'Storm Stage: skiller nå band fra standup/scene (annenhver)',
+        'Rettet OCR-feil: Die Spitz, Imminence, Dumdum Boys, Mørk Medisin m.fl.'
+      ]},
+      { version: 'v1.4.0', date: '2026-06-24', changes: [
+        'Segmentert scene-filter — alle scener på én linje uten scrolling',
+        'Kompakt scene-tag på kortene'
+      ]},
+      { version: 'v1.3.0', date: '2026-06-24', changes: [
+        'Favoritter: stjernemerk band og se dem på tvers av alle dager',
+        'Favoritter lagres lokalt og overlever omstart'
+      ]},
+      { version: 'v1.2.0', date: '2026-06-24', changes: [
+        'Compare bruker nå Last.fm for ekte lignende artister med match-prosent',
+        'Norge–Frankrike merket som fotball-event (ikke band)'
+      ]},
+      { version: 'v1.1.0', date: '2026-06-24', changes: [
+        'Lagt til iOS hjemskjerm-støtte (fullskjerm-app)',
+        'Verifiserte topplåter med Spotify-lenker'
+      ]},
+      { version: 'v1.0.0', date: '2026-06-24', changes: [
+        'Første versjon: program for alle fire dager, scene-filter, sjangre'
+      ]}
+    ];
+    // ============================================================
+
+    const bandGenres = {
+      'Black Debbath': ['Heavy Metal', 'Doom Metal'],
+      'Trivium': ['Metalcore', 'Heavy Metal'],
+      'Dumdum Boys': ['Post-Punk'],
+      'Bring Me The Horizon': ['Metalcore', 'Pop'],
+      'Cavalera': ['Thrash Metal'],
+      'Babymetal': ['Metal', 'Pop Metal'],
+      'The Offspring': ['Punk Rock'],
+      'Die Spitz': ['Norwegian Rock'],
+      'President': ['Rock'],
+      'The Carburetors': ['Hard Rock', 'Rock'],
+      'Blood Incantation': ['Death Metal'],
+      'BFD + Bathory': ['Black Metal'],
+      'Martin Beyer-Olsen': ['Folk'],
+      'Turdus Musicus': ['Norwegian Folk'],
+      'Cécile Moroni': ['Norwegian Folk'],
+      'Jordsjuk': ['Traditional Norwegian'],
+      'Apocalyptica': ['Symphonic Metal', 'Cello Metal'],
+      'D-A-D': ['Hard Rock', 'Heavy Metal'],
+      'Anthrax': ['Thrash Metal'],
+      'Iron Maiden': ['Heavy Metal', 'NWOBHM'],
+      'Audrey Horne': ['Hard Rock', 'Heavy Metal'],
+      'Imminence': ['Alternative Metal'],
+      'Suicidal Tendencies': ['Funk Metal'],
+      'Alice Cooper': ['Shock Rock', 'Hard Rock'],
+      'The Baboon Show': ['Norwegian Rock'],
+      'Grandson': ['Alternative Rock', 'Rap Rock'],
+      'Yonaka': ['Alternative Rock'],
+      'The Warning': ['Pop Rock'],
+      'PaleFace Swiss': ['Swiss Rock'],
+      'Sarah Løvald': ['Norwegian Pop'],
+      'Angell': ['Black Metal', 'Death Metal'],
+      'Paul Myrehaug': ['Electronic'],
+      'Ramonas Tea Party': ['Rock'],
+      'Raga Rockers': ['Indian Rock'],
+      'Tom Morello': ['Hard Rock', 'Funk Metal'],
+      'The Hives': ['Garage Rock', 'Punk'],
+      'Yungblud': ['Pop Punk'],
+      'Norge – Frankrike': ['Rock'],
+      'Eivør': ['Folk Pop'],
+      'Queensrÿche': ['Progressive Metal'],
+      'Avatar': ['Melodic Metal'],
+      'Behemoth': ['Black Metal', 'Death Metal'],
+      'Rival Sons': ['Hard Rock', 'Blues Rock'],
+      'The Funeral Portrait': ['Alternative Metal'],
+      'Kublai Khan TX': ['Metalcore'],
+      'Storm': ['Black Metal'],
+      'Dogstar': ['Alternative Rock'],
+      'Elder': ['Stoner Rock'],
+      'Mayhem': ['Black Metal'],
+      'Possessed': ['Death Metal'],
+      'Mørk Medisin + Dag Sørås & Espen Abrahamsen': ['Jazz'],
+      'Høst': ['Prog Rock', 'Hard Rock'],
+      'Nora Svenningsen': ['Norwegian Pop'],
+      'Koco Franco': ['Brazilian Rock'],
+      'DDR': ['Hard Rock'],
+      'Sepultura': ['Thrash Metal'],
+      'Accept': ['Heavy Metal', 'Speed Metal'],
+      'Pain': ['Industrial Metal'],
+      'Black Label Society': ['Heavy Metal', 'Doom Metal'],
+      'Leprous': ['Progressive Metal'],
+      'A Perfect Circle': ['Alternative Metal'],
+      'Ego Kill Talent': ['Metalcore'],
+      'Slay Squad': ['Rock'],
+      'Gaerea': ['Black Metal'],
+      'Gatecreeper': ['Death Metal'],
+      'Blood Red Throne': ['Death Metal'],
+      'Death To All': ['Metal'],
+      'Javad El Bakali': ['Soul'],
+      'You Know Who': ['Rock'],
+      'Bill Bailey': ['Comedy Rock'],
+      'Baphy': ['Rock']
+    };
+
+    const popularTracks = {
+      'Iron Maiden': ['The Trooper', 'Run to the Hills', 'Hallowed Be Thy Name', 'Fear of the Dark', 'The Number of the Beast'],
+      'Anthrax': ['Madhouse', 'Indians', 'Caught in a Mosh', 'Antisocial', 'Got the Time'],
+      'Alice Cooper': ['School\'s Out', 'Poison', 'No More Mr. Nice Guy', 'I\'m Eighteen', 'Feed My Frankenstein'],
+      'Apocalyptica': ['Nothing Else Matters', 'Hall of the Mountain King', 'I Don\'t Care', 'Path', 'Seek & Destroy'],
+      'Behemoth': ['O Father O Satan O Sun!', 'Conquer All', 'Ov Fire and the Void', 'Bartzabel', 'Chant for Eschaton 2000'],
+      'A Perfect Circle': ['Judith', 'The Outsider', 'The Hollow', '3 Libras', 'Weak and Powerless'],
+      'D-A-D': ['Sleeping My Day Away', 'Grow or Pay', 'Bad Craziness', 'Laugh \'n\' a 1/2', 'Jihad'],
+      'The Offspring': ['You\'re Gonna Go Far, Kid', 'The Kids Aren\'t Alright', 'Pretty Fly (For a White Guy)', 'Self Esteem', 'Come Out and Play'],
+      'Babymetal': ['Gimme Chocolate!!', 'KARATE', 'PA PA YA!!', 'Megitsune', 'Road of Resistance'],
+      'Suicidal Tendencies': ['Institutionalized', 'You Can\'t Bring Me Down', 'War Inside My Head', 'Pledge Your Allegiance', 'Possessed to Skate'],
+      'Black Label Society': ['Stillborn', 'In This River', 'Bleed for Me', 'Suicide Messiah', 'Concrete Jungle'],
+      'Leprous': ['The Sky Is Red', 'Slave', 'Below', 'From the Flame', 'The Price'],
+      'Avatar': ['Hail the Apocalypse', 'Smells Like a Freakshow', 'The Eagle Has Landed', 'Bloody Angel', 'A Statue of the King'],
+      'Queensrÿche': ['Silent Lucidity', 'Eyes of a Stranger', 'Jet City Woman', 'Empire', 'Queen of the Reich'],
+      'Cavalera': ['Roots Bloody Roots', 'Refuse/Resist', 'Territory', 'Attitude', 'Troops of Doom'],
+      'Rival Sons': ['Pressure and Time', 'Open My Eyes', 'Do Your Worst', 'Electric Man', 'Keep On Swinging'],
+      'Pain': ['Shut Your Mouth', 'End of the Line', 'Same Old Song', 'Dancing With the Dead', 'Designed to Piss You Off'],
+      'Accept': ['Balls to the Wall', 'Fast as a Shark', 'Metal Heart', 'Princess of the Dawn', 'Restless and Wild'],
+      'Sepultura': ['Roots Bloody Roots', 'Refuse/Resist', 'Territory', 'Arise', 'Ratamahatta'],
+      'Elder': ['Sanctuary', 'Dead Roots Stirring', 'Lore', 'Compendium', 'The Falling Veil'],
+      'The Hives': ['Hate to Say I Told You So', 'Tick Tick Boom', 'Walk Idiot Walk', 'Main Offender', 'Come On!'],
+      'Eivør': ['Trøllabundin', 'Falling Free', 'Tròdlabùndin', 'Salt', 'Mín móðir'],
+      'Tom Morello': ['Killing in the Name', 'Bulls on Parade', 'Guerrilla Radio', 'Like a Stone', 'Sleep Now in the Fire'],
+      'Bring Me The Horizon': ['Can You Feel My Heart', 'Throne', 'Drown', 'Doomed', 'Kingslayer'],
+      'Dumdum Boys': ['Splitter Pine', 'Enkeltbillett', 'Vredens Dag', 'Marsboern', 'Tyven, tyven'],
+      'Raga Rockers': ['Noen å hate', 'Hun er fri', 'Fanden, Fanden', 'Terrorister', 'Vil ha deg'],
+      'Yungblud': ['Loner', 'Fleabag', 'I Think I\'m OKAY', 'Parents', 'The Funeral'],
+      'Mayhem': ['Freezing Moon', 'De Mysteriis Dom Sathanas', 'Pure Fucking Armageddon', 'Funeral Fog', 'Deathcrush'],
+      'Audrey Horne': ['Pretty Hate Machine', 'Redemption Blues', 'This Is War', 'Out of the City', 'Light Your Way'],
+      'Limp Bizkit': ['Break Stuff', 'Rollin\'', 'My Way', 'Take a Look Around', 'Nookie'],
+      'Possessed': ['Death Metal', 'The Exorcist', 'Pentagram', 'Burning in Hell', 'Fallen Angel'],
+      'Gatecreeper': ['Sweltering Madness', 'Boiled Over', 'Puncture Wounds', 'Emptiness', 'Sterilized'],
+      'Blood Red Throne': ['Soulseller', 'Affiliated With the Suffering', 'Mary Whispers of Death', 'Deatholy', 'Dödsskrik'],
+      'Death To All': ['Pull the Plug', 'Crystal Mountain', 'Lack of Comprehension', 'Spirit Crusher', 'Symbolic'],
+      'Blood Incantation': ['The Giza Power Plant', 'Inner Paths', 'Hidden Species', 'Slave Species of the Gods', 'Awakening'],
+      'Kublai Khan TX': ['Antpile', 'Self-Harm', 'B.A.U.', 'The Hammer', 'No Kin'],
+      'The Funeral Portrait': ['Holy Water', 'Voodoo Doll', 'Alibi', 'Suffocate City', 'Bones'],
+      'Black Debbath': ['Naar Tyfusen Herjet', 'Storeslem i Slekta', 'Pizza & Pils', 'Lro', 'Hard Rock Ferie'],
+      'The Carburetors': ['Hard Rock', 'Rock'],
+      'The Baboon Show': ['People You Should Know', 'Don\'t Give a Damn About You', 'Radio Rebelde', 'My Plan', 'Channel by Channel'],
+      'PaleFace Swiss': ['Please End Me', 'Lifeline', 'Hatred', 'Wenn Die Sonne Erlischt', 'Gates of Zion'],
+      'Yonaka': ['Rockstar', 'Seize the Power', 'Punch Bag', 'Creature', 'Ordinary'],
+      'The Warning': ['Choke', 'Evolve', 'MORE', 'Money', 'Hell You Call a Dream'],
+      'Imminence': ['The Sickness', 'Heaven Shall Burn', 'Paralyzed', 'Ophidian', 'Come Hell or High Water'],
+      'Dogstar': ['Everything Turns Around', 'Glimmer', 'Breach', 'How the Story Ends', 'Sleep']
+    };
+
+    const schedule = [
+      { day: 'Wednesday', date: 'June 24', stages: { 'Scream Stage': [{ band: 'Black Debbath', start: '14:00', end: '14:50' }, { band: 'Trivium', start: '15:55', end: '16:55' }, { band: 'Dumdum Boys', start: '18:15', end: '19:25' }, { band: 'Bring Me The Horizon', start: '21:25', end: '22:55' }], 'Vampire Stage': [{ band: 'Cavalera', start: '14:55', end: '15:45' }, { band: 'Babymetal', start: '17:05', end: '18:05' }, { band: 'The Offspring', start: '19:40', end: '21:10' }], 'Moonlight Stage': [{ band: 'Die Spitz', start: '14:10', end: '14:55' }, { band: 'President', start: '15:25', end: '16:10' }, { band: 'The Carburetors', start: '16:45', end: '17:35' }, { band: 'Blood Incantation', start: '18:55', end: '19:45' }, { band: 'BFD + Bathory', start: '20:20', end: '21:20' }], 'The Storm Stage': [{ band: 'Martin Beyer-Olsen', start: '14:20', end: '14:50' }, { band: 'Turdus Musicus', start: '16:00', end: '16:30' }, { band: 'Cécile Moroni', start: '18:10', end: '18:40' }, { band: 'Jordsjuk', start: '19:10', end: '19:40' }] } },
+      { day: 'Thursday', date: 'June 25', stages: { 'Scream Stage': [{ band: 'Apocalyptica', start: '13:50', end: '14:35' }, { band: 'D-A-D', start: '15:45', end: '16:35' }, { band: 'Anthrax', start: '17:55', end: '18:55' }, { band: 'Iron Maiden', start: '20:45', end: '22:55' }], 'Vampire Stage': [{ band: 'Audrey Horne', start: '13:00', end: '13:45' }, { band: 'Imminence', start: '14:45', end: '15:35' }, { band: 'Suicidal Tendencies', start: '16:45', end: '17:45' }, { band: 'Alice Cooper', start: '19:10', end: '20:25' }], 'Moonlight Stage': [{ band: 'The Baboon Show', start: '13:15', end: '14:00' }, { band: 'Grandson', start: '14:35', end: '15:20' }, { band: 'Yonaka', start: '16:05', end: '16:55' }, { band: 'The Warning', start: '17:40', end: '18:30' }, { band: 'PaleFace Swiss', start: '19:20', end: '20:20' }], 'The Storm Stage': [{ band: 'Sarah Løvald', start: '14:00', end: '14:30' }, { band: 'Angell', start: '15:35', end: '16:05' }, { band: 'Paul Myrehaug', start: '17:45', end: '18:15' }, { band: 'Ramonas Tea Party', start: '18:40', end: '19:10' }] } },
+      { day: 'Friday', date: 'June 26', stages: { 'Scream Stage': [{ band: 'Raga Rockers', start: '13:20', end: '14:10' }, { band: 'Tom Morello', start: '15:05', end: '16:05' }, { band: 'The Hives', start: '17:10', end: '18:20' }, { band: 'Yungblud', start: '19:30', end: '20:50' }, { band: 'Norge – Frankrike', start: '21:05', end: '22:55' }], 'Vampire Stage': [{ band: 'Eivør', start: '12:30', end: '13:20' }, { band: 'Queensrÿche', start: '14:10', end: '15:00' }, { band: 'Avatar', start: '16:10', end: '17:05' }, { band: 'Behemoth', start: '18:25', end: '19:20' }, { band: 'Rival Sons', start: '21:30', end: '22:30' }], 'Moonlight Stage': [{ band: 'The Funeral Portrait', start: '13:00', end: '13:40' }, { band: 'Kublai Khan TX', start: '14:10', end: '14:55' }, { band: 'Storm', start: '16:25', end: '16:10' }, { band: 'Dogstar', start: '16:45', end: '17:35' }, { band: 'Elder', start: '18:10', end: '19:00' }, { band: 'Mayhem', start: '19:40', end: '20:50' }, { band: 'Possessed', start: '21:40', end: '22:30' }], 'The Storm Stage': [{ band: 'Mørk Medisin + Dag Sørås & Espen Abrahamsen', start: '15:00', end: '15:30' }, { band: 'Høst', start: '17:10', end: '17:40' }, { band: 'Nora Svenningsen', start: '18:10', end: '18:40' }, { band: 'Koco Franco', start: '19:10', end: '19:40' }] } },
+      { day: 'Saturday', date: 'June 27', stages: { 'Scream Stage': [{ band: 'DDR', start: '14:00', end: '14:50' }, { band: 'Sepultura', start: '16:10', end: '17:10' }, { band: 'Accept', start: '18:40', end: '19:55' }, { band: 'Limp Bizkit', start: '21:25', end: '22:55' }], 'Vampire Stage': [{ band: 'Pain', start: '13:00', end: '13:50' }, { band: 'Black Label Society', start: '15:05', end: '15:55' }, { band: 'Leprous', start: '17:25', end: '18:25' }, { band: 'A Perfect Circle', start: '20:05', end: '21:15' }], 'Moonlight Stage': [{ band: 'Ego Kill Talent', start: '13:00', end: '13:40' }, { band: 'Slay Squad', start: '14:10', end: '14:55' }, { band: 'Gaerea', start: '15:25', end: '16:10' }, { band: 'Gatecreeper', start: '19:45', end: '17:35' }, { band: 'Blood Red Throne', start: '18:55', end: '19:45' }, { band: 'Death To All', start: '20:15', end: '21:15' }], 'The Storm Stage': [{ band: 'Javad El Bakali', start: '14:00', end: '14:30' }, { band: 'You Know Who', start: '16:00', end: '16:30' }, { band: 'Bill Bailey', start: '18:25', end: '18:55' }, { band: 'Baphy', start: '19:30', end: '20:00' }] } }
+    ];
+
+    let selectedDay = 0, selectedStage = null, selectedGenre = null;
+    const stageMap = { 'Scream Stage': 'scream', 'Vampire Stage': 'vampire', 'Moonlight Stage': 'moonlight', 'The Storm Stage': 'storm' };
+    const stageShort = { 'Scream Stage': 'Scream', 'Vampire Stage': 'Vampire', 'Moonlight Stage': 'Moon', 'The Storm Stage': 'Storm' };
+
+    // ============================================================
+    // LAST.FM API — lim inn din gratis API-nøkkel her:
+    // Hent nøkkel på https://www.last.fm/api/account/create (tar 2 min)
+    const LASTFM_API_KEY = 'fa25a6ec230da428e1cb986cd924482a';
+    // ============================================================
+
+    // Klassifisering: oppføringer som IKKE er musikkband.
+    // 'event' = fotball/quiz, 'annet' = standup/karaoke/silent disco (Storm Stage).
+    // Kilde: tonsofrock-program bekrefter Storm Stage er stand-up/karaoke/silent disco,
+    // og at "Norge – Frankrike" er en fotballkamp vist på storskjerm.
+    const actType = {
+      'Norge – Frankrike': 'event',
+      // Standup/komikere på Storm Stage (verifisert mot festivalprogram + Last.fm):
+      'Martin Beyer-Olsen': 'annet', // komiker
+      'Cécile Moroni': 'annet',      // komiker
+      'Sarah Løvald': 'annet',      // Sarah Løvald, komiker
+      'Paul Myrehaug': 'annet',      // komiker
+      'Mørk Medisin + Dag Sørås & Espen Abrahamsen': 'annet', // Dag Sørås standup
+      'Nora Svenningsen': 'annet',  // Nora Svenningsen, komiker
+      'Javad El Bakali': 'annet',         // Javad El Bakali, komiker
+      'Bill Bailey': 'annet'         // britisk standup-legende
+      // Følgende Storm Stage-navn ER band (verifisert i offisiell lineup) og
+      // behandles som band automatisk: Turdus Musicus, Jordsjuk, Angel,
+      // Ramonas Tea Party, Host, Koco Franco, You Know Who, Baphy.
+    };
+    // Returnerer 'band' (default), 'event' eller 'annet'
+    function getActType(name) { return actType[name] || 'band'; }
+
+    // ===== FAVORITTER — sky-sync med localStorage som fallback =====
+    const API = '/api/favorites'; // Netlify-funksjon
+    let showFavoritesOnly = false;
+    let currentUser = null;        // innlogget brukernavn (null = lokal modus)
+    let localMode = false;         // true = bruker valgte å kjøre lokalt
+    let viewingFriend = null;      // { name, favorites } når man ser på en venn
+
+    // Lokal lagring (fallback + cache)
+    function loadLocalFavorites() {
+      try { return new Set(JSON.parse(localStorage.getItem('tor_favorites') || '[]')); }
+      catch (e) { return new Set(); }
+    }
+    function saveLocalFavorites(set) {
+      try { localStorage.setItem('tor_favorites', JSON.stringify([...set])); }
+      catch (e) { /* utilgjengelig */ }
+    }
+    let favorites = loadLocalFavorites();
+
+    function isFavorite(name) { return favorites.has(name); }
+
+    async function toggleFavorite(name) {
+      if (favorites.has(name)) favorites.delete(name); else favorites.add(name);
+      saveLocalFavorites(favorites);              // alltid lokalt umiddelbart
+      if (currentUser && !localMode) {
+        try { await saveFavoritesToCloud(); }     // synk til sky hvis innlogget
+        catch (e) { /* nett nede — lokalt er allerede lagret */ }
+      }
+    }
+
+    // ---- Sky-kommunikasjon ----
+    async function fetchCloudFavorites(user) {
+      const res = await fetch(`${API}?user=${encodeURIComponent(user)}`);
+      if (!res.ok) throw new Error('Kunne ikke hente (' + res.status + ')');
+      return res.json(); // { user, favorites, updated }
+    }
+    async function saveFavoritesToCloud() {
+      if (!currentUser) return;
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: currentUser, favorites: [...favorites] })
+      });
+      if (!res.ok) throw new Error('Lagring feilet (' + res.status + ')');
+      return res.json();
+    }
+
+    // ---- Brukernavn-håndtering ----
+    function getStoredUser() {
+      try { return localStorage.getItem('tor_user'); } catch (e) { return null; }
+    }
+    function setStoredUser(name) {
+      try { if (name) localStorage.setItem('tor_user', name); else localStorage.removeItem('tor_user'); }
+      catch (e) {}
+    }
+
+    // Logg på en bruker: hent favoritter fra sky, slå sammen med lokale
+    async function loginUser(name) {
+      const data = await fetchCloudFavorites(name);
+      const cloud = new Set(data.favorites || []);
+      // Slå sammen lokale + sky (union), så du ikke mister noe
+      favorites.forEach(f => cloud.add(f));
+      favorites = cloud;
+      currentUser = name;
+      localMode = false;
+      setStoredUser(name);
+      saveLocalFavorites(favorites);
+      await saveFavoritesToCloud(); // skriv tilbake sammenslått liste
+    }
+
+    function startLocalMode() {
+      localMode = true;
+      currentUser = null;
+      favorites = loadLocalFavorites();
+    }
+
+
+    // Auto-detect current day - festival is June 24-27, 2026
+    function getDefaultDay() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const day = now.getDate();
+      
+      // Festival dates
+      const festivalStart = new Date(2026, 5, 24); // June 24, 2026
+      const festivalEnd = new Date(2026, 5, 27);   // June 27, 2026
+      
+      if (now >= festivalStart && now <= festivalEnd) {
+        const dayOfWeek = now.getDay();
+        // 0=Sunday, 3=Wednesday (June 24), 4=Thursday, 5=Friday, 6=Saturday
+        if (dayOfWeek === 3) return 0; // Wednesday
+        if (dayOfWeek === 4) return 1; // Thursday
+        if (dayOfWeek === 5) return 2; // Friday
+        if (dayOfWeek === 6) return 3; // Saturday
+      }
+      return 0; // Default to Wednesday
+    }
+
+    selectedDay = getDefaultDay();
+
+    function showModal(title, subtitle, content) {
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.innerHTML = `<div class="modal"><button class="modal-close">✕</button><h2>${title}</h2>${subtitle ? `<div class="modal-subtitle">${subtitle}</div>` : ''}<div class="modal-content">${content}</div></div>`;
+      modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => e.target === modal && modal.remove());
+      document.body.appendChild(modal);
+      return modal;
+    }
+
+    // Henter lignende artister fra Last.fm (ekte lyttedata)
+    async function fetchSimilarArtists(bandName) {
+      const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=${encodeURIComponent(bandName)}&api_key=${LASTFM_API_KEY}&autocorrect=1&limit=12&format=json`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Last.fm svarte ikke (' + res.status + ')');
+      const data = await res.json();
+      if (data.error) throw new Error(data.message || 'Last.fm-feil');
+      const list = (data.similarartists && data.similarartists.artist) || [];
+      return list.map(a => ({ name: a.name, match: parseFloat(a.match) || 0 }));
+    }
+
+    async function showComparison(bandName) {
+      const modal = showModal(bandName, 'Lignende artister (Last.fm)', '<p style="color:#a1a1aa;">Laster lignende artister…</p>');
+      const contentEl = modal.querySelector('.modal-content');
+
+      if (!LASTFM_API_KEY || LASTFM_API_KEY === 'DIN_API_NOKKEL_HER') {
+        contentEl.innerHTML = `<p style="color:#fca5a5;">Mangler Last.fm API-nøkkel.</p><p style="color:#a1a1aa;font-size:0.85rem;margin-top:0.5rem;">Hent en gratis nøkkel på <a href="https://www.last.fm/api/account/create" target="_blank" rel="noopener" style="color:#60a5fa;">last.fm/api</a> og lim den inn i koden (LASTFM_API_KEY).</p>`;
+        return;
+      }
+
+      try {
+        const similar = await fetchSimilarArtists(bandName);
+        if (similar.length === 0) {
+          contentEl.innerHTML = `<p style="color:#a1a1aa;">Fant ingen lignende artister for «${bandName}».</p><a href="https://open.spotify.com/search/${encodeURIComponent(bandName)}" target="_blank" rel="noopener" class="track-item" style="border-color:#1db954;background:rgba(29,185,84,0.1);margin-top:0.75rem;"><div class="track-name">🎧 Søk ${bandName} på Spotify</div><div class="track-link" style="color:#1db954;">Åpne →</div></a>`;
+          return;
+        }
+        contentEl.innerHTML = similar.map(a => {
+          const pct = Math.round(a.match * 100);
+          const spotifyUrl = `https://open.spotify.com/search/${encodeURIComponent(a.name)}`;
+          return `<a href="${spotifyUrl}" target="_blank" rel="noopener noreferrer" class="track-item"><div class="track-name">${a.name}</div><div class="track-link">${pct > 0 ? pct + '% match · ' : ''}Åpne på Spotify →</div></a>`;
+        }).join('');
+      } catch (err) {
+        contentEl.innerHTML = `<p style="color:#fca5a5;">Kunne ikke hente data: ${err.message}</p><p style="color:#a1a1aa;font-size:0.85rem;margin-top:0.5rem;">Sjekk nettforbindelsen, eller søk direkte:</p><a href="https://open.spotify.com/search/${encodeURIComponent(bandName)}" target="_blank" rel="noopener" class="track-item" style="border-color:#1db954;background:rgba(29,185,84,0.1);margin-top:0.5rem;"><div class="track-name">🎧 ${bandName} på Spotify</div><div class="track-link" style="color:#1db954;">Åpne →</div></a>`;
+      }
+    }
+
+    function showTracks(bandName) {
+      const tracks = popularTracks[bandName] || [];
+      const artistUrl = `https://open.spotify.com/search/${encodeURIComponent(bandName)}`;
+      const tracksHtml = tracks.length > 0 
+        ? tracks.map(t => {
+          const url = `https://open.spotify.com/search/${encodeURIComponent(bandName + ' ' + t)}`;
+          return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="track-item"><div class="track-name">${t}</div><div class="track-link">Open in Spotify →</div></a>`;
+        }).join('') + `<a href="${artistUrl}" target="_blank" rel="noopener noreferrer" class="track-item" style="border-color: #1db954; background: rgba(29,185,84,0.1);"><div class="track-name">🎧 All songs by ${bandName}</div><div class="track-link" style="color: #1db954;">Open artist on Spotify →</div></a>`
+        : `<a href="${artistUrl}" target="_blank" rel="noopener noreferrer" class="track-item" style="border-color: #1db954; background: rgba(29,185,84,0.1);"><div class="track-name">🎧 ${bandName} on Spotify</div><div class="track-link" style="color: #1db954;">Open artist page →</div></a>`;
+      showModal(bandName, tracks.length > 0 ? 'Popular Tracks' : 'Listen on Spotify', `<div class="tracks-section">${tracksHtml}</div>`);
+    }
+
+    const stageIcon = { 'Scream Stage': '🔴', 'Vampire Stage': '🟣', 'Moonlight Stage': '🔵', 'The Storm Stage': '⚪' };
+
+    function render() {
+      const dayButtons = document.getElementById('dayButtons');
+      dayButtons.innerHTML = schedule.map((d, i) => `<button class="btn-day ${i === selectedDay && !showFavoritesOnly ? 'active' : ''}">${d.day}</button>`).join('');
+      dayButtons.querySelectorAll('button').forEach((btn, i) => {
+        btn.addEventListener('click', () => { selectedDay = i; selectedStage = null; showFavoritesOnly = false; render(); });
+      });
+
+      const stageButtons = document.getElementById('stageButtons');
+      const stages = Object.keys(schedule[selectedDay].stages);
+      const segMap = { 'Scream Stage': 'seg-scream', 'Vampire Stage': 'seg-vampire', 'Moonlight Stage': 'seg-moonlight', 'The Storm Stage': 'seg-storm' };
+      const favRow = `<div class="fav-row"><button class="btn-fav ${showFavoritesOnly ? 'active' : ''}">⭐ Mine favoritter <span class="fav-count">(${favorites.size})</span></button></div>`;
+      const segmented = `<div class="segmented">` +
+        `<button class="seg-all ${selectedStage === null && !showFavoritesOnly ? 'active' : ''}">Alle</button>` +
+        stages.map(s => `<button class="${segMap[s]} ${s === selectedStage && !showFavoritesOnly ? 'active' : ''}">${stageShort[s]}</button>`).join('') +
+        `</div>`;
+      stageButtons.innerHTML = favRow + segmented;
+      stageButtons.querySelector('.btn-fav').addEventListener('click', () => { showFavoritesOnly = !showFavoritesOnly; render(); });
+      const segBtns = stageButtons.querySelectorAll('.segmented button');
+      segBtns.forEach((btn, i) => {
+        btn.addEventListener('click', () => { selectedStage = i === 0 ? null : stages[i - 1]; showFavoritesOnly = false; render(); });
+      });
+
+      let perfs = [];
+      let dayHeader = '';
+      const content = document.getElementById('content');
+
+      if (showFavoritesOnly) {
+        // Favoritter på tvers av alle dager — egne eller en venns
+        const favSet = viewingFriend ? viewingFriend.favorites : favorites;
+        const isFav = (name) => favSet.has(name);
+        schedule.forEach(d => Object.entries(d.stages).forEach(([s, p]) => p.forEach(b => {
+          if (isFav(b.band)) perfs.push({...b, stage: s, day: d.day, date: d.date});
+        })));
+        const title = viewingFriend ? `👀 ${viewingFriend.name} sine favoritter` : '⭐ Mine favoritter';
+        dayHeader = `<div class="day-header"><h2>${title}</h2><p>${perfs.length} valgt · på tvers av alle dager</p></div>`;
+        if (perfs.length === 0) {
+          const msg = viewingFriend ? `${viewingFriend.name} har ingen favoritter ennå.` : 'Ingen favoritter ennå.<br>Trykk på ⭐ ved siden av et band for å lagre.';
+          content.innerHTML = dayHeader + `<div class="no-results">${msg}</div>`;
+          return;
+        }
+      } else {
+        const day = schedule[selectedDay];
+        if (selectedStage) {
+          perfs = day.stages[selectedStage].map(p => ({...p, stage: selectedStage}));
+        } else {
+          Object.entries(day.stages).forEach(([s, p]) => p.forEach(b => perfs.push({...b, stage: s})));
+          perfs.sort((a, b) => a.start.localeCompare(b.start));
+        }
+        if (perfs.length === 0) { content.innerHTML = '<div class="no-results">No bands found.</div>'; return; }
+        const dayData = schedule[selectedDay];
+        const prevDay = selectedDay > 0 ? selectedDay - 1 : null;
+        const nextDay = selectedDay < schedule.length - 1 ? selectedDay + 1 : null;
+        dayHeader = `<div class="day-header">${prevDay !== null ? `<button class="day-nav-btn prev">←</button>` : ''}<h2>${dayData.day}</h2><p>${dayData.date}</p>${nextDay !== null ? `<button class="day-nav-btn next">→</button>` : ''}</div>`;
+      }
+
+      content.innerHTML = dayHeader + perfs.map((p, i) => {
+        const genres = (bandGenres[p.band] || []).join(' • ');
+        const type = getActType(p.band);
+        const fav = isFavorite(p.band);
+        // Skjul stjerne når man ser på en venns liste (skrivebeskyttet)
+        const starBtn = viewingFriend ? '' : `<button class="star-btn ${fav ? 'active' : ''}" data-fav-idx="${i}" title="${fav ? 'Fjern favoritt' : 'Lagre favoritt'}">${fav ? '★' : '☆'}</button>`;
+        const dayTag = showFavoritesOnly ? `<span class="date-badge">${p.day}</span>` : '';
+        const stageTag = `<span class="stage-tag ${stageMap[p.stage] || 'storm'}">${stageShort[p.stage] || p.stage}</span>`;
+        if (type !== 'band') {
+          const icon = type === 'event' ? '⚽' : '🎤';
+          const label = type === 'event' ? 'Storskjerm-event' : 'Standup / scene';
+          return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${icon} ${p.band}</div><div class="performance-genres">${label}</div><div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div></div></div>`;
+        }
+        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div><button class="compare-btn" data-idx="${i}" data-action="compare">Compare</button><button class="compare-btn" data-idx="${i}" data-action="tracks">♪</button></div></div>`;
+      }).join('');
+
+      window.currentPerfs = perfs;
+      content.querySelectorAll('[data-fav-idx]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const band = window.currentPerfs[parseInt(btn.dataset.favIdx)].band;
+          await toggleFavorite(band);
+          render();
+        });
+      });
+      content.querySelectorAll('[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const band = window.currentPerfs[parseInt(btn.dataset.idx)].band;
+          btn.dataset.action === 'compare' ? showComparison(band) : showTracks(band);
+        });
+      });
+
+      // Add day navigation listeners
+      const prevBtn = content.parentElement.querySelector('.day-nav-btn.prev');
+      const nextBtn = content.parentElement.querySelector('.day-nav-btn.next');
+      if (prevBtn) prevBtn.addEventListener('click', () => { selectedDay--; render(); });
+      if (nextBtn) nextBtn.addEventListener('click', () => { selectedDay++; render(); });
+    }
+
+    // Vis versjonsinfo i footer (klikkbar → endringslogg)
+    const versionEl = document.getElementById('versionInfo');
+    versionEl.innerHTML = `<strong>${APP_VERSION}</strong> · build ${APP_BUILD} · trykk for endringslogg`;
+    versionEl.addEventListener('click', showChangelog);
+
+    function showChangelog() {
+      const html = CHANGELOG.map((entry, idx) => {
+        const items = entry.changes.map(c => `<li>${c}</li>`).join('');
+        return `<div class="changelog-entry ${idx === 0 ? 'current' : ''}"><h4>${entry.version}<span class="cl-date">${entry.date}</span></h4><ul>${items}</ul></div>`;
+      }).join('');
+      showModal('Endringslogg', `Gjeldende versjon: ${APP_VERSION}`, html);
+    }
+
+    // ===== BRUKER-UI =====
+    function renderUserBar() {
+      const bar = document.getElementById('userBar');
+      if (viewingFriend) {
+        bar.innerHTML = `<span class="who">👀 Ser på <strong>${viewingFriend.name}</strong> sine favoritter</span><button id="exitFriend">Tilbake til mine</button>`;
+        bar.querySelector('#exitFriend').addEventListener('click', () => { viewingFriend = null; showFavoritesOnly = false; renderUserBar(); render(); });
+      } else if (currentUser) {
+        bar.innerHTML = `<span class="who">☁️ Pålogget som <strong>${currentUser}</strong></span><span style="display:flex;gap:0.4rem;"><button id="viewFriend">Se venn</button><button id="switchUser">Bytt</button></span>`;
+        bar.querySelector('#switchUser').addEventListener('click', showLoginModal);
+        bar.querySelector('#viewFriend').addEventListener('click', showFriendModal);
+      } else {
+        bar.innerHTML = `<span class="who">📵 Lokal modus <span class="local-tag">(favoritter kun på denne enheten)</span></span><button id="loginNow">Logg på</button>`;
+        bar.querySelector('#loginNow').addEventListener('click', showLoginModal);
+      }
+    }
+
+    // Onboarding / innlogging
+    function showLoginModal() {
+      const body = `
+        <div class="form-field">
+          <label>Velg et brukernavn (3–30 tegn)</label>
+          <input type="text" id="userInput" placeholder="f.eks. Rune" maxlength="30" autocomplete="off">
+        </div>
+        <div id="loginStatus"></div>
+        <button class="modal-btn primary" id="loginConfirm">Logg på / opprett</button>
+        <button class="modal-btn secondary" id="loginLocal">Start lokalt (uten innlogging)</button>
+        <p class="modal-note">Åpen pålogging uten passord. Favorittene dine lagres i skyen under brukernavnet, så du når dem fra flere enheter og venner kan se hva du skal se på. Velg «Start lokalt» hvis nettet er tregt.</p>
+      `;
+      const modal = showModal('Logg på', 'Sky-favoritter', body);
+      const input = modal.querySelector('#userInput');
+      const status = modal.querySelector('#loginStatus');
+      if (currentUser) input.value = currentUser;
+      input.focus();
+
+      modal.querySelector('#loginLocal').addEventListener('click', () => {
+        startLocalMode(); modal.remove(); renderUserBar(); render();
+      });
+
+      modal.querySelector('#loginConfirm').addEventListener('click', async () => {
+        const name = input.value.trim();
+        if (name.length < 3) { status.innerHTML = '<div class="modal-status warn">Brukernavn må være minst 3 tegn.</div>'; return; }
+        status.innerHTML = '<div class="modal-status info">Sjekker…</div>';
+        try {
+          const data = await fetchCloudFavorites(name);
+          if (data.favorites && data.favorites.length > 0) {
+            // Navnet finnes med favoritter — la bruker bekrefte
+            status.innerHTML = `<div class="modal-status warn">Navnet «${name}» finnes med ${data.favorites.length} favoritter.<br>Er det deg? Da henter vi dem. Hvis ikke, velg et annet navn.</div>`;
+            const confirmBtn = modal.querySelector('#loginConfirm');
+            confirmBtn.textContent = `Ja, fortsett som ${name}`;
+            confirmBtn.onclick = async () => {
+              await loginUser(name); modal.remove(); renderUserBar(); render();
+            };
+          } else {
+            // Ledig (eller tomt) — logg på direkte
+            await loginUser(name); modal.remove(); renderUserBar(); render();
+          }
+        } catch (e) {
+          status.innerHTML = `<div class="modal-status warn">Får ikke kontakt med skyen (${e.message}). Du kan starte lokalt i stedet.</div>`;
+        }
+      });
+    }
+
+    // Se en venns favoritter
+    function showFriendModal() {
+      const body = `
+        <div class="form-field">
+          <label>Skriv inn en venns brukernavn</label>
+          <input type="text" id="friendInput" placeholder="f.eks. Sirild" maxlength="30" autocomplete="off">
+        </div>
+        <div id="friendStatus"></div>
+        <button class="modal-btn primary" id="friendConfirm">Vis favoritter</button>
+        <p class="modal-note">Du ser vennens favoritter skrivebeskyttet. Dine egne forblir uendret.</p>
+      `;
+      const modal = showModal('Se en venn', 'Hva skal vennegjengen se?', body);
+      const input = modal.querySelector('#friendInput');
+      const status = modal.querySelector('#friendStatus');
+      input.focus();
+      modal.querySelector('#friendConfirm').addEventListener('click', async () => {
+        const name = input.value.trim();
+        if (name.length < 3) { status.innerHTML = '<div class="modal-status warn">Skriv inn et gyldig navn.</div>'; return; }
+        status.innerHTML = '<div class="modal-status info">Henter…</div>';
+        try {
+          const data = await fetchCloudFavorites(name);
+          if (!data.favorites || data.favorites.length === 0) {
+            status.innerHTML = `<div class="modal-status warn">«${name}» har ingen favoritter ennå (eller finnes ikke).</div>`;
+            return;
+          }
+          viewingFriend = { name, favorites: new Set(data.favorites) };
+          showFavoritesOnly = true;
+          modal.remove(); renderUserBar(); render();
+        } catch (e) {
+          status.innerHTML = `<div class="modal-status warn">Kunne ikke hente (${e.message}).</div>`;
+        }
+      });
+    }
+
+    // ===== OPPSTART =====
+    async function startup() {
+      renderUserBar();
+      render();
+      const saved = getStoredUser();
+      if (saved) {
+        // Prøv å logge på lagret bruker i bakgrunnen
+        try { await loginUser(saved); renderUserBar(); render(); }
+        catch (e) { startLocalMode(); renderUserBar(); }
+      } else {
+        // Første gang — vis innloggingsvalg (men appen funker lokalt uansett)
+        showLoginModal();
+      }
+    }
+
+    startup();
+</html>

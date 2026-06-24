@@ -1,0 +1,16 @@
+# Netlify-konfigurasjon for Tons of Rock flerbrukerversjon
+
+[build]
+  # Ingen byggesteg trengs — ren statisk HTML + functions
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  # Bruker moderne ES-moduler i funksjonene
+  node_bundler = "esbuild"
+
+# Pen URL for favoritt-API-et (valgfritt, men ryddig)
+[[redirects]]
+  from = "/api/favorites"
+  to = "/.netlify/functions/favorites"
+  status = 200
