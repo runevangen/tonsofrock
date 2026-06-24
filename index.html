@@ -97,6 +97,29 @@
     .viewing-banner .vb-text { color: #93c5fd; font-size: 0.9rem; }
     .viewing-banner .vb-text strong { color: #fff; }
     .viewing-banner button { background: #2563eb; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    /* Venne-rad på kort (Variant 1: favoritter venstre, knapp høyre) */
+    .friends-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid #27272a; }
+    .friends-left { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; min-width: 0; }
+    .friends-left .fav-label { font-size: 0.8rem; color: #a1a1aa; font-weight: 600; }
+    .initial { width: 1.6rem; height: 1.6rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: #fff; cursor: pointer; border: 1.5px solid #18181b; }
+    .initial.c0 { background: #dc2626; } .initial.c1 { background: #2563eb; } .initial.c2 { background: #16a34a; }
+    .initial.c3 { background: #9333ea; } .initial.c4 { background: #ea580c; } .initial.c5 { background: #0891b2; }
+    .total-count { font-size: 0.8rem; color: #71717a; font-weight: 600; }
+    .compare-inline { background: transparent; color: #a1a1aa; border: 1px solid #52525b; border-radius: 0.375rem; padding: 0.35rem 0.7rem; font-size: 0.8rem; cursor: pointer; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+    .compare-inline:hover { border-color: #a1a1aa; color: #fff; }
+    /* Admin-lenke i footer */
+    .footer .admin-link { font-size: 0.7rem; color: #3f3f46; margin-top: 0.75rem; cursor: pointer; display: inline-block; }
+    .footer .admin-link:hover { color: #71717a; }
+    /* Venne/admin-lister i modal */
+    .pick-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; background: #27272a; border-radius: 0.375rem; margin-bottom: 0.5rem; cursor: pointer; }
+    .pick-item:hover { background: #3f3f46; }
+    .pick-item input { width: 1.1rem; height: 1.1rem; accent-color: #fbbf24; flex-shrink: 0; }
+    .pick-item .pname { font-weight: 600; flex: 1; }
+    .pick-item .pmeta { font-size: 0.75rem; color: #71717a; }
+    .modal-select { width: 100%; padding: 0.6rem; background: #000; border: 1px solid #3f3f46; border-radius: 0.375rem; color: #fff; font-size: 1rem; }
+    .admin-bar { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .admin-bar button { flex: 1; }
+    .warn-box { background: rgba(220,38,38,0.15); border: 1px solid #dc2626; color: #fca5a5; padding: 0.6rem; border-radius: 0.375rem; font-size: 0.85rem; margin-bottom: 1rem; }
     .performance-right { display: flex; gap: 0.5rem; align-items: flex-start; flex-shrink: 0; flex-col; }
     .time-display { font-size: 1.5rem; font-weight: 700; color: #52525b; min-width: 60px; text-align: right; }
     .compare-btn { background: transparent; color: #52525b; border: 1px solid #52525b; border-radius: 0.375rem; padding: 0.4rem 0.6rem; transition: all 0.2s; font-size: 0.9rem; }
@@ -168,20 +191,25 @@
   <div class="footer">
     Tons of Rock Festival Schedule 2026
     <div class="version" id="versionInfo"></div>
+    <div class="admin-link" id="adminLink">· admin ·</div>
   </div>
 
   <script>
     // ============================================================
     // VERSJON — legg til ny oppføring øverst i CHANGELOG ved hver innsjekking
-    const APP_VERSION = 'v2.0.0-beta';
+    const APP_VERSION = 'v2.1.0-beta';
     const APP_BUILD = '2026-06-24';
     const CHANGELOG = [
+      { version: 'v2.1.0-beta', date: '2026-06-24', changes: [
+        'Venner: velg fra liste over registrerte brukere',
+        '«Favoritter til:» viser venners initialer + totaltall på band',
+        'Av/på-bryter for å vise venner på kortene',
+        '«Sammenlignes med…» (tidligere Compare)',
+        'Admin-panel i footer for å rydde brukere (passord i Netlify)'
+      ]},
       { version: 'v2.0.0-beta', date: '2026-06-24', changes: [
-        'FLERBRUKER: favoritter lagres nå i skyen under et brukernavn',
-        'Logg på med brukernavn (åpen pålogging, ingen passord)',
-        'Se hva venner skal se på via deres brukernavn',
-        'Duplikatsjekk på brukernavn ved innlogging',
-        'Fallback til lokal modus ved tregt/manglende nett'
+        'FLERBRUKER: favoritter lagres i skyen under et brukernavn',
+        'Logg på med brukernavn, se venners favoritter, lokal fallback'
       ]},
       { version: 'v1.7.0', date: '2026-06-24', changes: [
         'Ryddet OCR-feil i bandnavn mot offisiell lineup',
@@ -385,6 +413,10 @@
     let currentUser = null;        // innlogget brukernavn (null = lokal modus)
     let localMode = false;         // true = bruker valgte å kjøre lokalt
     let viewingFriend = null;      // { name, favorites } når man ser på en venn
+    let myFriends = [];            // mine valgte venner (brukernavn)
+    let allUsers = [];             // alle registrerte brukere [{name,count,updated}]
+    let showFriendsOnCards = false;// av/på: vis "Favoritter til:" på kort
+    let bandFavCounts = {};        // { bandnavn: { total, friends:[navn] } }
 
     // Lokal lagring (fallback + cache)
     function loadLocalFavorites() {
@@ -412,17 +444,40 @@
     async function fetchCloudFavorites(user) {
       const res = await fetch(`${API}?user=${encodeURIComponent(user)}`);
       if (!res.ok) throw new Error('Kunne ikke hente (' + res.status + ')');
-      return res.json(); // { user, favorites, updated }
+      return res.json(); // { user, favorites, friends, updated }
     }
     async function saveFavoritesToCloud() {
       if (!currentUser) return;
       const res = await fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: currentUser, favorites: [...favorites] })
+        body: JSON.stringify({ user: currentUser, favorites: [...favorites], friends: myFriends })
       });
       if (!res.ok) throw new Error('Lagring feilet (' + res.status + ')');
       return res.json();
+    }
+    async function fetchAllUsers() {
+      const res = await fetch('/api/users');
+      if (!res.ok) throw new Error('Kunne ikke hente brukere (' + res.status + ')');
+      const data = await res.json();
+      return data.users || [];
+    }
+    // Bygg tellinger per band: hvor mange totalt + hvilke av mine venner
+    async function buildBandCounts() {
+      bandFavCounts = {};
+      try {
+        const users = await fetchAllUsers();
+        allUsers = users;
+        // Hent hver brukers favoritter (enkel variant — OK for vennegjeng)
+        for (const u of users) {
+          const data = await fetchCloudFavorites(u.name);
+          (data.favorites || []).forEach(band => {
+            if (!bandFavCounts[band]) bandFavCounts[band] = { total: 0, friends: [] };
+            bandFavCounts[band].total++;
+            if (myFriends.includes(u.name)) bandFavCounts[band].friends.push(u.name);
+          });
+        }
+      } catch (e) { /* nett nede — ingen tellinger, kort vises rene */ }
     }
 
     // ---- Brukernavn-håndtering ----
@@ -434,18 +489,18 @@
       catch (e) {}
     }
 
-    // Logg på en bruker: hent favoritter fra sky, slå sammen med lokale
+    // Logg på en bruker: hent favoritter + venner fra sky, slå sammen lokale
     async function loginUser(name) {
       const data = await fetchCloudFavorites(name);
       const cloud = new Set(data.favorites || []);
-      // Slå sammen lokale + sky (union), så du ikke mister noe
       favorites.forEach(f => cloud.add(f));
       favorites = cloud;
+      myFriends = data.friends || [];
       currentUser = name;
       localMode = false;
       setStoredUser(name);
       saveLocalFavorites(favorites);
-      await saveFavoritesToCloud(); // skriv tilbake sammenslått liste
+      await saveFavoritesToCloud();
     }
 
     function startLocalMode() {
@@ -602,12 +657,38 @@
         const starBtn = viewingFriend ? '' : `<button class="star-btn ${fav ? 'active' : ''}" data-fav-idx="${i}" title="${fav ? 'Fjern favoritt' : 'Lagre favoritt'}">${fav ? '★' : '☆'}</button>`;
         const dayTag = showFavoritesOnly ? `<span class="date-badge">${p.day}</span>` : '';
         const stageTag = `<span class="stage-tag ${stageMap[p.stage] || 'storm'}">${stageShort[p.stage] || p.stage}</span>`;
+
         if (type !== 'band') {
           const icon = type === 'event' ? '⚽' : '🎤';
           const label = type === 'event' ? 'Storskjerm-event' : 'Standup / scene';
           return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${icon} ${p.band}</div><div class="performance-genres">${label}</div><div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div></div></div>`;
         }
-        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div><button class="compare-btn" data-idx="${i}" data-action="compare">Compare</button><button class="compare-btn" data-idx="${i}" data-action="tracks">♪</button></div></div>`;
+
+        // Venne-rad (Variant 1) — vises bare når showFriendsOnCards er på
+        let friendsBar = '';
+        const counts = bandFavCounts[p.band];
+        const compareBtn = `<button class="compare-inline" data-idx="${i}" data-action="compare">Sammenlignes med…</button>`;
+        if (showFriendsOnCards) {
+          let leftHtml = '<span class="fav-label">Favoritter til:</span>';
+          if (counts && counts.total > 0) {
+            if (counts.friends.length > 0) {
+              const inits = computeInitials(counts.friends);
+              leftHtml += counts.friends.map(f => `<span class="initial ${colorClass(f)}" title="${f}">${inits[f]}</span>`).join('');
+              const others = counts.total - counts.friends.length;
+              leftHtml += `<span class="total-count">${others > 0 ? '+' + others + ' totalt' : ''}</span>`;
+            } else {
+              leftHtml = `<span class="fav-label" style="color:#71717a;">Favoritter til: ${counts.total} totalt (ingen venner ennå)</span>`;
+            }
+          } else {
+            leftHtml = `<span class="fav-label" style="color:#52525b;">Favoritter til: ingen ennå</span>`;
+          }
+          friendsBar = `<div class="friends-bar"><div class="friends-left">${leftHtml}</div>${compareBtn}</div>`;
+        }
+
+        // Tracks-knapp + stjerne + tid øverst til høyre. Compare ligger i friendsBar
+        // (eller, hvis venne-visning er av, vis compare i høyre kolonne som før).
+        const rightCompare = showFriendsOnCards ? '' : `<button class="compare-btn" data-idx="${i}" data-action="compare">Sammenlignes med…</button>`;
+        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div>${friendsBar}</div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div>${rightCompare}<button class="compare-btn" data-idx="${i}" data-action="tracks">♪</button></div></div>`;
       }).join('');
 
       window.currentPerfs = perfs;
@@ -624,6 +705,13 @@
           btn.dataset.action === 'compare' ? showComparison(band) : showTracks(band);
         });
       });
+      // Klikk på initial-sirkel → vis fullt navn
+      content.querySelectorAll('.initial').forEach(el => {
+        el.addEventListener('click', () => {
+          const name = el.getAttribute('title');
+          if (name) showModal(name, 'Festivalvenn', `<p style="color:#d4d4d8;">${name} har dette bandet som favoritt.</p>`);
+        });
+      });
 
       // Add day navigation listeners
       const prevBtn = content.parentElement.querySelector('.day-nav-btn.prev');
@@ -636,6 +724,7 @@
     const versionEl = document.getElementById('versionInfo');
     versionEl.innerHTML = `<strong>${APP_VERSION}</strong> · build ${APP_BUILD} · trykk for endringslogg`;
     versionEl.addEventListener('click', showChangelog);
+    document.getElementById('adminLink').addEventListener('click', showAdminModal);
 
     function showChangelog() {
       const html = CHANGELOG.map((entry, idx) => {
@@ -645,6 +734,36 @@
       showModal('Endringslogg', `Gjeldende versjon: ${APP_VERSION}`, html);
     }
 
+    // ===== INITIALER (med duplikathåndtering RV1/RV2) =====
+    function computeInitials(names) {
+      // names = liste med brukernavn → { navn: "RV" / "RV1" }
+      const raw = {};
+      names.forEach(n => {
+        const parts = n.trim().split(/\s+/);
+        let init;
+        if (parts.length >= 2) init = (parts[0][0] + parts[1][0]).toUpperCase();
+        else init = n.slice(0, 2).toUpperCase();
+        raw[n] = init;
+      });
+      // Finn duplikater og legg på nummer
+      const counts = {};
+      Object.values(raw).forEach(i => counts[i] = (counts[i] || 0) + 1);
+      const seen = {};
+      const result = {};
+      names.forEach(n => {
+        const i = raw[n];
+        if (counts[i] > 1) { seen[i] = (seen[i] || 0) + 1; result[n] = i + seen[i]; }
+        else result[n] = i;
+      });
+      return result;
+    }
+    function colorClass(name) {
+      // Stabil farge per navn (hash)
+      let h = 0;
+      for (let c of name) h = (h * 31 + c.charCodeAt(0)) % 6;
+      return 'c' + h;
+    }
+
     // ===== BRUKER-UI =====
     function renderUserBar() {
       const bar = document.getElementById('userBar');
@@ -652,9 +771,18 @@
         bar.innerHTML = `<span class="who">👀 Ser på <strong>${viewingFriend.name}</strong> sine favoritter</span><button id="exitFriend">Tilbake til mine</button>`;
         bar.querySelector('#exitFriend').addEventListener('click', () => { viewingFriend = null; showFavoritesOnly = false; renderUserBar(); render(); });
       } else if (currentUser) {
-        bar.innerHTML = `<span class="who">☁️ Pålogget som <strong>${currentUser}</strong></span><span style="display:flex;gap:0.4rem;"><button id="viewFriend">Se venn</button><button id="switchUser">Bytt</button></span>`;
+        const toggleLabel = showFriendsOnCards ? '👥 Venner: PÅ' : '👥 Venner: AV';
+        bar.innerHTML = `<span class="who">☁️ <strong>${currentUser}</strong></span><span style="display:flex;gap:0.4rem;flex-wrap:wrap;"><button id="toggleFriends" style="${showFriendsOnCards ? 'background:#2563eb;color:#fff;' : ''}">${toggleLabel}</button><button id="manageFriends">Venner</button><button id="viewFriend">Se venn</button><button id="switchUser">Bytt</button></span>`;
         bar.querySelector('#switchUser').addEventListener('click', showLoginModal);
         bar.querySelector('#viewFriend').addEventListener('click', showFriendModal);
+        bar.querySelector('#manageFriends').addEventListener('click', showManageFriendsModal);
+        bar.querySelector('#toggleFriends').addEventListener('click', async () => {
+          showFriendsOnCards = !showFriendsOnCards;
+          if (showFriendsOnCards && Object.keys(bandFavCounts).length === 0) {
+            await buildBandCounts();
+          }
+          renderUserBar(); render();
+        });
       } else {
         bar.innerHTML = `<span class="who">📵 Lokal modus <span class="local-tag">(favoritter kun på denne enheten)</span></span><button id="loginNow">Logg på</button>`;
         bar.querySelector('#loginNow').addEventListener('click', showLoginModal);
@@ -708,28 +836,33 @@
     }
 
     // Se en venns favoritter
+    // Se en venn — dropdown fra MINE venner
     function showFriendModal() {
+      if (myFriends.length === 0) {
+        showModal('Se en venn', 'Ingen venner ennå', `<p style="color:#a1a1aa;">Du har ikke lagt til noen venner ennå. Trykk «Venner» for å velge fra lista.</p><button class="modal-btn primary" id="goManage">Velg venner</button>`).querySelector('#goManage').addEventListener('click', (e) => { e.target.closest('.modal-overlay').remove(); showManageFriendsModal(); });
+        return;
+      }
+      const options = myFriends.map(f => `<option value="${f}">${f}</option>`).join('');
       const body = `
         <div class="form-field">
-          <label>Skriv inn en venns brukernavn</label>
-          <input type="text" id="friendInput" placeholder="f.eks. Sirild" maxlength="30" autocomplete="off">
+          <label>Velg fra vennelista di</label>
+          <select class="modal-select" id="friendSelect"><option value="">— velg venn —</option>${options}</select>
         </div>
         <div id="friendStatus"></div>
         <button class="modal-btn primary" id="friendConfirm">Vis favoritter</button>
         <p class="modal-note">Du ser vennens favoritter skrivebeskyttet. Dine egne forblir uendret.</p>
       `;
       const modal = showModal('Se en venn', 'Hva skal vennegjengen se?', body);
-      const input = modal.querySelector('#friendInput');
+      const select = modal.querySelector('#friendSelect');
       const status = modal.querySelector('#friendStatus');
-      input.focus();
       modal.querySelector('#friendConfirm').addEventListener('click', async () => {
-        const name = input.value.trim();
-        if (name.length < 3) { status.innerHTML = '<div class="modal-status warn">Skriv inn et gyldig navn.</div>'; return; }
+        const name = select.value;
+        if (!name) { status.innerHTML = '<div class="modal-status warn">Velg en venn først.</div>'; return; }
         status.innerHTML = '<div class="modal-status info">Henter…</div>';
         try {
           const data = await fetchCloudFavorites(name);
           if (!data.favorites || data.favorites.length === 0) {
-            status.innerHTML = `<div class="modal-status warn">«${name}» har ingen favoritter ennå (eller finnes ikke).</div>`;
+            status.innerHTML = `<div class="modal-status warn">«${name}» har ingen favoritter ennå.</div>`;
             return;
           }
           viewingFriend = { name, favorites: new Set(data.favorites) };
@@ -737,6 +870,113 @@
           modal.remove(); renderUserBar(); render();
         } catch (e) {
           status.innerHTML = `<div class="modal-status warn">Kunne ikke hente (${e.message}).</div>`;
+        }
+      });
+    }
+
+    // Velg venner fra liste over alle brukere
+    async function showManageFriendsModal() {
+      const modal = showModal('Mine venner', 'Hak av hvem du vil følge', '<p style="color:#a1a1aa;">Henter brukere…</p>');
+      const content = modal.querySelector('.modal-content');
+      try {
+        const users = await fetchAllUsers();
+        allUsers = users;
+        const others = users.filter(u => u.name !== currentUser);
+        if (others.length === 0) {
+          content.innerHTML = '<p style="color:#a1a1aa;">Ingen andre brukere ennå. Når venner lager profiler, dukker de opp her.</p>';
+          return;
+        }
+        const items = others.map(u => `
+          <label class="pick-item">
+            <input type="checkbox" value="${u.name}" ${myFriends.includes(u.name) ? 'checked' : ''}>
+            <span class="pname">${u.name}</span>
+            <span class="pmeta">${u.count} favoritter</span>
+          </label>`).join('');
+        content.innerHTML = items + `<button class="modal-btn primary" id="saveFriends">Lagre venner</button>`;
+        content.querySelector('#saveFriends').addEventListener('click', async () => {
+          myFriends = [...content.querySelectorAll('input:checked')].map(cb => cb.value);
+          try { await saveFavoritesToCloud(); } catch (e) {}
+          bandFavCounts = {}; // tving ny telling
+          if (showFriendsOnCards) await buildBandCounts();
+          modal.remove(); renderUserBar(); render();
+        });
+      } catch (e) {
+        content.innerHTML = `<div class="modal-status warn">Kunne ikke hente brukere (${e.message}).</div>`;
+      }
+    }
+
+    // ===== ADMIN =====
+    function showAdminModal() {
+      const body = `
+        <div class="form-field">
+          <label>Admin-passord</label>
+          <input type="password" id="adminPw" placeholder="passord" autocomplete="off">
+        </div>
+        <div id="adminStatus"></div>
+        <button class="modal-btn primary" id="adminLogin">Logg inn</button>
+        <p class="modal-note">Passordet ligger trygt i Netlify (ikke i koden).</p>
+      `;
+      const modal = showModal('🔒 Admin', 'Brukeradministrasjon', body);
+      const pw = modal.querySelector('#adminPw');
+      const status = modal.querySelector('#adminStatus');
+      pw.focus();
+      modal.querySelector('#adminLogin').addEventListener('click', async () => {
+        const password = pw.value;
+        if (!password) { status.innerHTML = '<div class="modal-status warn">Skriv inn passord.</div>'; return; }
+        status.innerHTML = '<div class="modal-status info">Henter brukere…</div>';
+        try {
+          const users = await fetchAllUsers();
+          renderAdminPanel(modal, password, users);
+        } catch (e) {
+          status.innerHTML = `<div class="modal-status warn">Feil: ${e.message}</div>`;
+        }
+      });
+    }
+
+    function renderAdminPanel(modal, password, users) {
+      const content = modal.querySelector('.modal-content');
+      const fmtDate = (d) => d ? new Date(d).toLocaleDateString('no-NO') : '–';
+      const items = users.map(u => `
+        <label class="pick-item">
+          <input type="checkbox" value="${u.name}">
+          <span class="pname">${u.name}</span>
+          <span class="pmeta">${u.count} fav · ${fmtDate(u.updated)}</span>
+        </label>`).join('');
+      content.innerHTML = `
+        <div class="warn-box">⚠️ Sletting kan ikke angres</div>
+        ${items || '<p style="color:#a1a1aa;">Ingen brukere.</p>'}
+        <div class="admin-bar">
+          <button class="modal-btn secondary" id="markAll" style="margin-top:0;">Merk alle</button>
+          <button class="modal-btn danger" id="delSelected" style="margin-top:0;">Slett valgte (0)</button>
+        </div>
+        <div id="adminResult"></div>
+      `;
+      const checks = () => [...content.querySelectorAll('input[type=checkbox]')];
+      const delBtn = content.querySelector('#delSelected');
+      const updateCount = () => { delBtn.textContent = `Slett valgte (${checks().filter(c => c.checked).length})`; };
+      checks().forEach(c => c.addEventListener('change', updateCount));
+      content.querySelector('#markAll').addEventListener('click', () => {
+        const allChecked = checks().every(c => c.checked);
+        checks().forEach(c => c.checked = !allChecked);
+        updateCount();
+      });
+      delBtn.addEventListener('click', async () => {
+        const selected = checks().filter(c => c.checked).map(c => c.value);
+        if (selected.length === 0) return;
+        if (!confirm(`Slette ${selected.length} bruker(e)? Kan ikke angres.`)) return;
+        content.querySelector('#adminResult').innerHTML = '<div class="modal-status info">Sletter…</div>';
+        try {
+          const res = await fetch('/api/admin-delete', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, users: selected })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Feil');
+          const remaining = await fetchAllUsers();
+          renderAdminPanel(modal, password, remaining);
+          modal.querySelector('#adminResult').innerHTML = `<div class="modal-status info">Slettet ${data.deleted} bruker(e).</div>`;
+        } catch (e) {
+          content.querySelector('#adminResult').innerHTML = `<div class="modal-status warn">Feil: ${e.message}</div>`;
         }
       });
     }
