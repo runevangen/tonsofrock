@@ -1,14 +1,15 @@
-// Netlify Function: favoritter, venner, brukerliste og admin
+// Netlify Function: favoritter, venner, brukerliste, admin og tribune-posisjon
 // Database: Netlify Blobs (nøkkel/verdi)
 //
 // Endepunkter:
-//   GET  /api/favorites?user=Rune       -> { user, favorites, friends, updated }
+//   GET  /api/favorites?user=Rune       -> { user, favorites, friends, positions, updated }
 //   POST /api/favorites { user, favorites, friends } -> lagrer profil
 //   GET  /api/users                     -> { users:[{ name, count, updated }] }
 //   POST /api/admin-delete { password, users:[...] } -> sletter brukere
+//   GET  /api/positions?band=X          -> { band, positions:[{ user, pos, meet }] }
+//   POST /api/position { user, band, pos, meet } -> live-lagrer én posisjon
 //
-// Admin-passord ligger i miljovariabel ADMIN_PASSWORD (settes i Netlify),
-// IKKE i koden. Apen palogging ellers.
+// Admin-passord i miljovariabel ADMIN_PASSWORD (settes i Netlify), ikke i koden.
 
 import { getStore } from '@netlify/blobs';
 
@@ -55,6 +56,23 @@ export default async (req) => {
       return json({ users });
     }
 
+    // ALLE POSISJONER FOR ET BAND (tribune-kart)
+    if (req.method === 'GET' && url.pathname.endsWith('/positions')) {
+      const band = url.searchParams.get('band');
+      if (!band) return json({ error: 'Mangler band' }, 400);
+      const { blobs } = await store.list();
+      const positions = [];
+      for (const b of blobs) {
+        const name = b.key.replace(/^user:/, '');
+        const data = await store.get(b.key, { type: 'json' });
+        const p = data && data.positions && data.positions[band];
+        if (p && typeof p.pos === 'number') {
+          positions.push({ user: name, pos: p.pos, meet: !!p.meet });
+        }
+      }
+      return json({ band, positions });
+    }
+
     // ADMIN: SLETT BRUKERE
     if (req.method === 'POST' && url.pathname.endsWith('/admin-delete')) {
       const body = await req.json();
@@ -70,6 +88,33 @@ export default async (req) => {
       return json({ ok: true, deleted });
     }
 
+    // LIVE-LAGRE ÉN POSISJON (tribune)
+    if (req.method === 'POST' && url.pathname.endsWith('/position')) {
+      const body = await req.json();
+      const user = cleanUser(body.user);
+      if (!user) return json({ error: 'Ugyldig brukernavn' }, 400);
+      const band = typeof body.band === 'string' ? body.band.slice(0, 100) : null;
+      if (!band) return json({ error: 'Mangler band' }, 400);
+      const existing = (await store.get('user:' + user, { type: 'json' })) || {};
+      const positions = existing.positions || {};
+      // pos = null betyr "fjern meg fra kartet"
+      if (body.pos === null || body.pos === undefined) {
+        delete positions[band];
+      } else {
+        const pos = parseInt(body.pos, 10);
+        if (isNaN(pos) || pos < 0 || pos > 8) return json({ error: 'Ugyldig posisjon' }, 400);
+        positions[band] = { pos, meet: !!body.meet };
+      }
+      const record = {
+        favorites: existing.favorites || [],
+        friends: existing.friends || [],
+        positions,
+        updated: new Date().toISOString()
+      };
+      await store.setJSON('user:' + user, record);
+      return json({ ok: true });
+    }
+
     // HENT PROFIL
     if (req.method === 'GET') {
       const user = cleanUser(url.searchParams.get('user'));
@@ -79,11 +124,12 @@ export default async (req) => {
         user,
         favorites: (data && data.favorites) || [],
         friends: (data && data.friends) || [],
+        positions: (data && data.positions) || {},
         updated: (data && data.updated) || null
       });
     }
 
-    // LAGRE PROFIL
+    // LAGRE PROFIL (favoritter + venner; bevarer posisjoner)
     if (req.method === 'POST') {
       const body = await req.json();
       const user = cleanUser(body.user);
@@ -95,7 +141,11 @@ export default async (req) => {
       const friends = Array.isArray(body.friends)
         ? body.friends.map(cleanUser).filter(Boolean).slice(0, 100)
         : (existing.friends || []);
-      const record = { favorites, friends, updated: new Date().toISOString() };
+      const record = {
+        favorites, friends,
+        positions: existing.positions || {},
+        updated: new Date().toISOString()
+      };
       await store.setJSON('user:' + user, record);
       return json({ ok: true, user, count: favorites.length, friends: friends.length });
     }
