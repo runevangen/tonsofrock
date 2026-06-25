@@ -51,10 +51,13 @@
     .btn-stage:hover, .btn-genre:hover { background: #3f3f46; }
     .content { padding: 1.5rem; max-width: 56rem; margin: 0 auto; }
     .no-results { text-align: center; padding: 3rem 1rem; color: #71717a; }
-    .performance { border: 2px solid; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; transition: all 0.2s; display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; background: #18181b; }
+    .performance { border: 2px solid; border-radius: 0.5rem; padding: 1rem; margin-bottom: 0.75rem; transition: all 0.2s; background: #18181b; }
     .performance:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
     .performance-info { flex: 1; min-width: 0; }
-    .performance-band { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; word-break: break-word; color: #fff; }
+    .perf-top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+    .band-line { display: flex; align-items: flex-start; gap: 0.6rem; flex: 1; min-width: 0; }
+    .band-line .band-text { flex: 1; min-width: 0; }
+    .performance-band { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; word-break: break-word; color: #fff; line-height: 1.15; }
     .performance-genres { font-size: 0.75rem; color: #a1a1aa; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
     .performance-meta { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.9rem; align-items: center; }
     .stage-badge { font-weight: 800; font-size: 1.05rem; padding: 0.3rem 0.7rem 0.3rem 0.5rem; border-radius: 0.375rem; background: #000; color: #fff; border-left: 4px solid; display: inline-block; }
@@ -66,7 +69,7 @@
     .stage-tag.storm { background: #57534e; }
     .time-badge { color: #d4d4d8; font-weight: 600; }
     .date-badge { color: #71717a; }
-    .star-btn { background: transparent; border: none; cursor: pointer; font-size: 1.6rem; line-height: 1; padding: 0.2rem 0.3rem; transition: transform 0.15s; flex-shrink: 0; color: #52525b; }
+    .star-btn { background: transparent; border: none; cursor: pointer; font-size: 1.5rem; line-height: 1.1; padding: 0; transition: transform 0.15s; flex-shrink: 0; color: #52525b; }
     .star-btn:hover { transform: scale(1.2); }
     .star-btn.active { color: #fbbf24; }
     .btn-fav { background: #27272a; color: #fbbf24; }
@@ -101,10 +104,9 @@
     .viewing-banner .vb-text { color: #93c5fd; font-size: 0.9rem; }
     .viewing-banner .vb-text strong { color: #fff; }
     .viewing-banner button { background: #2563eb; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
-    /* Venne-rad på kort (Variant A: label+knapper øverst, navn-piller under) */
+    /* Venne-rad på kort (Variant A: stjerne+navn+knapper øverst, navn-piller under) */
     .friends-bar { margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid #27272a; }
-    .fav-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.55rem; }
-    .fav-label { font-size: 0.8rem; color: #fbbf24; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+    .fav-label { font-size: 0.8rem; color: #fbbf24; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; display: block; margin-bottom: 0.5rem; }
     .nametags { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
     .nametag { display: inline-flex; align-items: center; gap: 0.35rem; background: #27272a; border-radius: 1rem; padding: 0.22rem 0.6rem 0.22rem 0.28rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
     .nametag:hover { background: #3f3f46; }
@@ -116,10 +118,10 @@
     .compare-inline:hover { border-color: #a1a1aa; color: #fff; }
     .btn-row { display: flex; gap: 0.4rem; flex-shrink: 0; }
     .icon-btn { border: none; border-radius: 0.375rem; padding: 0.35rem 0.6rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
-    .icon-btn.spotify { background: #1db954; color: #000; }
-    .icon-btn.spotify:hover { background: #1ed760; }
-    .icon-btn.lfm { background: #d51007; color: #fff; }
-    .icon-btn.lfm:hover { background: #e8140a; }
+    .icon-btn.spotify { background: #27272a; color: #1db954; border: 1px solid #1db954; }
+    .icon-btn.spotify:hover { background: #1db954; color: #000; }
+    .icon-btn.lfm { background: #27272a; color: #1db954; border: 1px solid #1db954; }
+    .icon-btn.lfm:hover { background: #1db954; color: #000; }
     /* Admin-lenke i footer */
     .footer .admin-link { font-size: 0.7rem; color: #3f3f46; margin-top: 0.75rem; cursor: pointer; display: inline-block; }
     .footer .admin-link:hover { color: #71717a; }
@@ -179,8 +181,6 @@
     .hidden { display: none; }
     @media (max-width: 640px) {
       .header h1 { font-size: 1.875rem; }
-      .performance { flex-direction: column; }
-      .performance-right { flex-direction: row; justify-content: space-between; width: 100%; }
     }
   </style>
 </head>
@@ -212,9 +212,19 @@
   <script>
     // ============================================================
     // VERSJON — legg til ny oppføring øverst i CHANGELOG ved hver innsjekking
-    const APP_VERSION = 'v2.3.0-beta';
-    const APP_BUILD = '2026-06-24';
+    const APP_VERSION = 'v2.4.1-beta';
+    const APP_BUILD = '2026-06-25';
     const CHANGELOG = [
+      { version: 'v2.4.1-beta', date: '2026-06-25', changes: [
+        'Joan Jett and the Blackhearts ? erstatter Yungblud (fredag, avlyst)',
+        '«?» markerer at nøyaktig spilletid ikke er bekreftet ennå'
+      ]},
+      { version: 'v2.4.0-beta', date: '2026-06-24', changes: [
+        'Stjerne flyttet til venstre for bandnavnet',
+        'LFM/Spotify-knapper øverst til høyre, begge i rolig mørk stil',
+        'Fjernet stort klokkeslett (tiden står fortsatt i meta-linja)',
+        'Fikset «+N andre» som feilaktig talte deg selv'
+      ]},
       { version: 'v2.3.0-beta', date: '2026-06-24', changes: [
         '«Favoritter til:» nederst med fulle navn (fornavn-piller)',
         'Over 10 venner vises som «+N andre»',
@@ -306,7 +316,7 @@
       'Raga Rockers': ['Indian Rock'],
       'Tom Morello': ['Hard Rock', 'Funk Metal'],
       'The Hives': ['Garage Rock', 'Punk'],
-      'Yungblud': ['Pop Punk'],
+      'Joan Jett and the Blackhearts ?': ['Rock', 'Punk Rock', 'Hard Rock'],
       'Norge – Frankrike': ['Rock'],
       'Eivør': ['Folk Pop'],
       'Queensrÿche': ['Progressive Metal'],
@@ -370,7 +380,7 @@
       'Bring Me The Horizon': ['Can You Feel My Heart', 'Throne', 'Drown', 'Doomed', 'Kingslayer'],
       'Dumdum Boys': ['Splitter Pine', 'Enkeltbillett', 'Vredens Dag', 'Marsboern', 'Tyven, tyven'],
       'Raga Rockers': ['Noen å hate', 'Hun er fri', 'Fanden, Fanden', 'Terrorister', 'Vil ha deg'],
-      'Yungblud': ['Loner', 'Fleabag', 'I Think I\'m OKAY', 'Parents', 'The Funeral'],
+      'Joan Jett and the Blackhearts ?': ['I Love Rock n Roll', 'Bad Reputation', 'I Hate Myself for Loving You', 'Crimson and Clover', 'Cherry Bomb'],
       'Mayhem': ['Freezing Moon', 'De Mysteriis Dom Sathanas', 'Pure Fucking Armageddon', 'Funeral Fog', 'Deathcrush'],
       'Audrey Horne': ['Pretty Hate Machine', 'Redemption Blues', 'This Is War', 'Out of the City', 'Light Your Way'],
       'Limp Bizkit': ['Break Stuff', 'Rollin\'', 'My Way', 'Take a Look Around', 'Nookie'],
@@ -394,7 +404,7 @@
     const schedule = [
       { day: 'Wednesday', date: 'June 24', stages: { 'Scream Stage': [{ band: 'Black Debbath', start: '14:00', end: '14:50' }, { band: 'Trivium', start: '15:55', end: '16:55' }, { band: 'Dumdum Boys', start: '18:15', end: '19:25' }, { band: 'Bring Me The Horizon', start: '21:25', end: '22:55' }], 'Vampire Stage': [{ band: 'Cavalera', start: '14:55', end: '15:45' }, { band: 'Babymetal', start: '17:05', end: '18:05' }, { band: 'The Offspring', start: '19:40', end: '21:10' }], 'Moonlight Stage': [{ band: 'Die Spitz', start: '14:10', end: '14:55' }, { band: 'President', start: '15:25', end: '16:10' }, { band: 'The Carburetors', start: '16:45', end: '17:35' }, { band: 'Blood Incantation', start: '18:55', end: '19:45' }, { band: 'BFD + Bathory', start: '20:20', end: '21:20' }], 'The Storm Stage': [{ band: 'Martin Beyer-Olsen', start: '14:20', end: '14:50' }, { band: 'Turdus Musicus', start: '16:00', end: '16:30' }, { band: 'Cécile Moroni', start: '18:10', end: '18:40' }, { band: 'Jordsjuk', start: '19:10', end: '19:40' }] } },
       { day: 'Thursday', date: 'June 25', stages: { 'Scream Stage': [{ band: 'Apocalyptica', start: '13:50', end: '14:35' }, { band: 'D-A-D', start: '15:45', end: '16:35' }, { band: 'Anthrax', start: '17:55', end: '18:55' }, { band: 'Iron Maiden', start: '20:45', end: '22:55' }], 'Vampire Stage': [{ band: 'Audrey Horne', start: '13:00', end: '13:45' }, { band: 'Imminence', start: '14:45', end: '15:35' }, { band: 'Suicidal Tendencies', start: '16:45', end: '17:45' }, { band: 'Alice Cooper', start: '19:10', end: '20:25' }], 'Moonlight Stage': [{ band: 'The Baboon Show', start: '13:15', end: '14:00' }, { band: 'Grandson', start: '14:35', end: '15:20' }, { band: 'Yonaka', start: '16:05', end: '16:55' }, { band: 'The Warning', start: '17:40', end: '18:30' }, { band: 'PaleFace Swiss', start: '19:20', end: '20:20' }], 'The Storm Stage': [{ band: 'Sarah Løvald', start: '14:00', end: '14:30' }, { band: 'Angell', start: '15:35', end: '16:05' }, { band: 'Paul Myrehaug', start: '17:45', end: '18:15' }, { band: 'Ramonas Tea Party', start: '18:40', end: '19:10' }] } },
-      { day: 'Friday', date: 'June 26', stages: { 'Scream Stage': [{ band: 'Raga Rockers', start: '13:20', end: '14:10' }, { band: 'Tom Morello', start: '15:05', end: '16:05' }, { band: 'The Hives', start: '17:10', end: '18:20' }, { band: 'Yungblud', start: '19:30', end: '20:50' }, { band: 'Norge – Frankrike', start: '21:05', end: '22:55' }], 'Vampire Stage': [{ band: 'Eivør', start: '12:30', end: '13:20' }, { band: 'Queensrÿche', start: '14:10', end: '15:00' }, { band: 'Avatar', start: '16:10', end: '17:05' }, { band: 'Behemoth', start: '18:25', end: '19:20' }, { band: 'Rival Sons', start: '21:30', end: '22:30' }], 'Moonlight Stage': [{ band: 'The Funeral Portrait', start: '13:00', end: '13:40' }, { band: 'Kublai Khan TX', start: '14:10', end: '14:55' }, { band: 'Storm', start: '16:25', end: '16:10' }, { band: 'Dogstar', start: '16:45', end: '17:35' }, { band: 'Elder', start: '18:10', end: '19:00' }, { band: 'Mayhem', start: '19:40', end: '20:50' }, { band: 'Possessed', start: '21:40', end: '22:30' }], 'The Storm Stage': [{ band: 'Mørk Medisin + Dag Sørås & Espen Abrahamsen', start: '15:00', end: '15:30' }, { band: 'Høst', start: '17:10', end: '17:40' }, { band: 'Nora Svenningsen', start: '18:10', end: '18:40' }, { band: 'Koco Franco', start: '19:10', end: '19:40' }] } },
+      { day: 'Friday', date: 'June 26', stages: { 'Scream Stage': [{ band: 'Raga Rockers', start: '13:20', end: '14:10' }, { band: 'Tom Morello', start: '15:05', end: '16:05' }, { band: 'The Hives', start: '17:10', end: '18:20' }, { band: 'Joan Jett and the Blackhearts ?', start: '19:30', end: '20:50' }, { band: 'Norge – Frankrike', start: '21:05', end: '22:55' }], 'Vampire Stage': [{ band: 'Eivør', start: '12:30', end: '13:20' }, { band: 'Queensrÿche', start: '14:10', end: '15:00' }, { band: 'Avatar', start: '16:10', end: '17:05' }, { band: 'Behemoth', start: '18:25', end: '19:20' }, { band: 'Rival Sons', start: '21:30', end: '22:30' }], 'Moonlight Stage': [{ band: 'The Funeral Portrait', start: '13:00', end: '13:40' }, { band: 'Kublai Khan TX', start: '14:10', end: '14:55' }, { band: 'Storm', start: '16:25', end: '16:10' }, { band: 'Dogstar', start: '16:45', end: '17:35' }, { band: 'Elder', start: '18:10', end: '19:00' }, { band: 'Mayhem', start: '19:40', end: '20:50' }, { band: 'Possessed', start: '21:40', end: '22:30' }], 'The Storm Stage': [{ band: 'Mørk Medisin + Dag Sørås & Espen Abrahamsen', start: '15:00', end: '15:30' }, { band: 'Høst', start: '17:10', end: '17:40' }, { band: 'Nora Svenningsen', start: '18:10', end: '18:40' }, { band: 'Koco Franco', start: '19:10', end: '19:40' }] } },
       { day: 'Saturday', date: 'June 27', stages: { 'Scream Stage': [{ band: 'DDR', start: '14:00', end: '14:50' }, { band: 'Sepultura', start: '16:10', end: '17:10' }, { band: 'Accept', start: '18:40', end: '19:55' }, { band: 'Limp Bizkit', start: '21:25', end: '22:55' }], 'Vampire Stage': [{ band: 'Pain', start: '13:00', end: '13:50' }, { band: 'Black Label Society', start: '15:05', end: '15:55' }, { band: 'Leprous', start: '17:25', end: '18:25' }, { band: 'A Perfect Circle', start: '20:05', end: '21:15' }], 'Moonlight Stage': [{ band: 'Ego Kill Talent', start: '13:00', end: '13:40' }, { band: 'Slay Squad', start: '14:10', end: '14:55' }, { band: 'Gaerea', start: '15:25', end: '16:10' }, { band: 'Gatecreeper', start: '19:45', end: '17:35' }, { band: 'Blood Red Throne', start: '18:55', end: '19:45' }, { band: 'Death To All', start: '20:15', end: '21:15' }], 'The Storm Stage': [{ band: 'Javad El Bakali', start: '14:00', end: '14:30' }, { band: 'You Know Who', start: '16:00', end: '16:30' }, { band: 'Bill Bailey', start: '18:25', end: '18:55' }, { band: 'Baphy', start: '19:30', end: '20:00' }] } }
     ];
 
@@ -501,12 +511,14 @@
           ? new Set(users.map(u => u.name))   // alle er venner
           : new Set(myFriends);               // bare valgte venner
         for (const u of users) {
-          if (u.name === currentUser) { /* ikke vis deg selv som "venn" */ }
+          // Hopp over deg selv helt — "Favoritter til:" handler om ANDRE enn deg.
+          // (Din egen favoritt ser du allerede via stjerna på kortet.)
+          if (u.name === currentUser) continue;
           const data = await fetchCloudFavorites(u.name);
           (data.favorites || []).forEach(band => {
             if (!bandFavCounts[band]) bandFavCounts[band] = { total: 0, friends: [] };
             bandFavCounts[band].total++;
-            if (u.name !== currentUser && friendSet.has(u.name)) {
+            if (friendSet.has(u.name)) {
               bandFavCounts[band].friends.push(u.name);
             }
           });
@@ -714,7 +726,7 @@
         if (type !== 'band') {
           const icon = type === 'event' ? '⚽' : '🎤';
           const label = type === 'event' ? 'Storskjerm-event' : 'Standup / scene';
-          return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${icon} ${p.band}</div><div class="performance-genres">${label}</div><div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div></div></div>`;
+          return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="band-line">${starBtn}<div class="band-text"><div class="performance-band">${icon} ${p.band}</div><div class="performance-genres">${label}</div><div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div></div></div></div>`;
         }
 
         // Venne-rad (Variant A): "Favoritter til:" + LFM/Spotify øverst, navn-piller under
@@ -740,12 +752,10 @@
           } else {
             pillsHtml = `<span class="total-count" style="color:#52525b;">ingen ennå</span>`;
           }
-          friendsBar = `<div class="friends-bar"><div class="fav-head"><span class="fav-label">Favoritter til:</span>${btnFamily}</div><div class="nametags">${pillsHtml}</div></div>`;
+          friendsBar = `<div class="friends-bar"><span class="fav-label">Favoritter til:</span><div class="nametags">${pillsHtml}</div></div>`;
         }
 
-        // Når venne-visning er AV: vis knappene i høyre kolonne i stedet
-        const rightButtons = showFriendsOnCards ? '' : btnFamily;
-        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div>${friendsBar}</div><div class="performance-right">${starBtn}<div class="time-display">${p.start}</div>${rightButtons}</div></div>`;
+        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="perf-top-row"><div class="band-line">${starBtn}<div class="band-text"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div></div>${btnFamily}</div>${friendsBar}</div></div>`;
       }).join('');
 
       window.currentPerfs = perfs;
