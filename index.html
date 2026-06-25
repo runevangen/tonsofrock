@@ -106,7 +106,7 @@
     .viewing-banner button { background: #2563eb; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 0.375rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
     /* Venne-rad på kort (Variant A: stjerne+navn+knapper øverst, navn-piller under) */
     .friends-bar { margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid #27272a; }
-    .fav-label { font-size: 0.8rem; color: #fbbf24; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; display: block; margin-bottom: 0.5rem; }
+    .fav-label { font-size: 0.82rem; color: #fbbf24; font-weight: 700; letter-spacing: 0.01em; display: block; margin-bottom: 0.5rem; }
     .nametags { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
     .nametag { display: inline-flex; align-items: center; gap: 0.35rem; background: #27272a; border-radius: 1rem; padding: 0.22rem 0.6rem 0.22rem 0.28rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
     .nametag:hover { background: #3f3f46; }
@@ -212,9 +212,13 @@
   <script>
     // ============================================================
     // VERSJON — legg til ny oppføring øverst i CHANGELOG ved hver innsjekking
-    const APP_VERSION = 'v2.4.1-beta';
+    const APP_VERSION = 'v2.5.0-beta';
     const APP_BUILD = '2026-06-25';
     const CHANGELOG = [
+      { version: 'v2.5.0-beta', date: '2026-06-25', changes: [
+        'Tilfeldig overskrift over venne-pillene — ny hver gang du åpner appen',
+        '12 varianter (Folket har talt, Gjengen som stiller, Rock on! m.fl.)'
+      ]},
       { version: 'v2.4.1-beta', date: '2026-06-25', changes: [
         'Joan Jett and the Blackhearts ? erstatter Yungblud (fredag, avlyst)',
         '«?» markerer at nøyaktig spilletid ikke er bekreftet ennå'
@@ -453,6 +457,23 @@
     const AUTO_VENNER_UNDER = 15;  // under denne grensen er alle automatisk venner
     let autoFriendMode = false;    // true når < AUTO_VENNER_UNDER brukere
     let capWarningShown = false;   // har vi vist 15+-advarselen?
+
+    // Tekst over venne-pillene — én tilfeldig per økt (byttes ved ny åpning)
+    const FAV_LABELS = [
+      'Favoritter til:',
+      'Venners utsøkte smak:',
+      'Venner med sans:',
+      'Disse vet hva som er bra:',
+      'Folk med god smak skal hit:',
+      'Vennegjengens valg:',
+      'Disse rockerne har valgt:',
+      'Møt disse folka her:',
+      'Folket har talt:',
+      'Gjengen som stiller:',
+      'Her samles flokken:',
+      'Rock on!'
+    ];
+    const favLabel = FAV_LABELS[Math.floor(Math.random() * FAV_LABELS.length)];
 
     // Lokal lagring (fallback + cache)
     function loadLocalFavorites() {
@@ -752,7 +773,7 @@
           } else {
             pillsHtml = `<span class="total-count" style="color:#52525b;">ingen ennå</span>`;
           }
-          friendsBar = `<div class="friends-bar"><span class="fav-label">Favoritter til:</span><div class="nametags">${pillsHtml}</div></div>`;
+          friendsBar = `<div class="friends-bar"><span class="fav-label">${favLabel}</span><div class="nametags">${pillsHtml}</div></div>`;
         }
 
         return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="perf-top-row"><div class="band-line">${starBtn}<div class="band-text"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div></div>${btnFamily}</div>${friendsBar}</div></div>`;
