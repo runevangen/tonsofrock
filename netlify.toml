@@ -22,3 +22,13 @@
   from = "/api/admin-delete"
   to = "/.netlify/functions/favorites"
   status = 200
+
+[[redirects]]
+  from = "/api/positions"
+  to = "/.netlify/functions/favorites"
+  status = 200
+
+[[redirects]]
+  from = "/api/position"
+  to = "/.netlify/functions/favorites"
+  status = 200

@@ -122,6 +122,32 @@
     .icon-btn.spotify:hover { background: #1db954; color: #000; }
     .icon-btn.lfm { background: #27272a; color: #1db954; border: 1px solid #1db954; }
     .icon-btn.lfm:hover { background: #1db954; color: #000; }
+    .icon-btn.pos { background: #27272a; color: #fbbf24; border: 1px solid #fbbf24; }
+    .icon-btn.pos:hover { background: #fbbf24; color: #000; }
+    /* Arena-kart (tribune-posisjon) */
+    .arena { background: radial-gradient(ellipse at 50% 0%, #1c1c22 0%, #0a0a0c 80%); border-radius: 0.6rem; padding: 0.8rem 0.6rem 1rem; }
+    .arena-stage { background: linear-gradient(to bottom, #fbbf24, #b8860b); color: #000; text-align: center; font-weight: 900; letter-spacing: 0.15em; font-size: 0.85rem; padding: 0.55rem; border-radius: 0.5rem 0.5rem 1.5rem 1.5rem; box-shadow: 0 0 30px rgba(251,191,36,0.4); margin: 0 auto 0.2rem; width: 60%; }
+    .arena-glow { height: 0.5rem; background: radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.25), transparent 70%); margin-bottom: 0.5rem; }
+    .zone-side-label { text-align: center; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.12em; color: #52525b; margin-bottom: 0.25rem; font-weight: 700; }
+    .zone-row { display: flex; gap: 0.4rem; justify-content: center; margin: 0 auto 0.4rem; }
+    .zone-row.foran { width: 74%; } .zone-row.midten { width: 88%; } .zone-row.bak { width: 100%; }
+    .zone { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid #3f3f46; border-radius: 0.4rem; min-height: 4rem; padding: 0.3rem; cursor: pointer; display: flex; flex-wrap: wrap; gap: 0.25rem; align-content: flex-start; justify-content: center; transition: all 0.15s; position: relative; }
+    .zone:hover { border-color: #71717a; background: rgba(255,255,255,0.06); }
+    .zone.mine { border-color: #fbbf24; background: rgba(251,191,36,0.1); box-shadow: inset 0 0 12px rgba(251,191,36,0.15); }
+    .zone-tag { position: absolute; top: 3px; left: 5px; font-size: 0.5rem; font-weight: 700; color: #52525b; letter-spacing: 0.05em; }
+    .zone.mine .zone-tag { color: #fbbf24; }
+    .bub { width: 1.7rem; height: 1.7rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.58rem; font-weight: 800; color: #fff; position: relative; cursor: pointer; margin-top: 0.5rem; }
+    .bub.seek::after { content: '✨'; position: absolute; top: -0.55rem; right: -0.45rem; font-size: 0.7rem; }
+    .bub.c0 { background: #dc2626; } .bub.c1 { background: #2563eb; } .bub.c2 { background: #16a34a; }
+    .bub.c3 { background: #9333ea; } .bub.c4 { background: #ea580c; } .bub.c5 { background: #0891b2; }
+    .bub.me { background: #fbbf24; color: #000; box-shadow: 0 0 0 2px #18181b, 0 0 0 3.5px #fbbf24; }
+    .meet-toggle { margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; background: #27272a; border-radius: 0.5rem; padding: 0.7rem 0.9rem; }
+    .meet-toggle .mt-text { font-size: 0.85rem; }
+    .meet-toggle .mt-text small { display: block; color: #71717a; font-size: 0.72rem; margin-top: 0.15rem; }
+    .meet-btn { border: 1px solid #52525b; background: transparent; color: #a1a1aa; border-radius: 0.4rem; padding: 0.4rem 0.8rem; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
+    .meet-btn.on { background: #fbbf24; color: #000; border-color: #fbbf24; }
+    .arena-legend { font-size: 0.72rem; color: #52525b; margin-top: 0.9rem; line-height: 1.5; }
+    .concert-desc { color: #a1a1aa; font-size: 0.85rem; line-height: 1.5; margin: 0.4rem 0 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid #27272a; }
     /* Admin-lenke i footer */
     .footer .admin-link { font-size: 0.7rem; color: #3f3f46; margin-top: 0.75rem; cursor: pointer; display: inline-block; }
     .footer .admin-link:hover { color: #71717a; }
@@ -212,9 +238,15 @@
   <script>
     // ============================================================
     // VERSJON — legg til ny oppføring øverst i CHANGELOG ved hver innsjekking
-    const APP_VERSION = 'v2.5.0-beta';
+    const APP_VERSION = 'v2.6.0-beta';
     const APP_BUILD = '2026-06-25';
     const CHANGELOG = [
+      { version: 'v2.6.0-beta', date: '2026-06-25', changes: [
+        'NYTT: tribune-kart — marker hvor du står på hver konsert (📍-knapp)',
+        'Se hvor vennegjengen står på et arena-kart sett ovenfra',
+        '«Møt meg her ✨» for å vise at du søker selskap (kun synlig i kartet)',
+        'Live-lagring — flytt deg ved å trykke en ny sone'
+      ]},
       { version: 'v2.5.0-beta', date: '2026-06-25', changes: [
         'Tilfeldig overskrift over venne-pillene — ny hver gang du åpner appen',
         '12 varianter (Folket har talt, Gjengen som stiller, Rock on! m.fl.)'
@@ -753,7 +785,7 @@
         // Venne-rad (Variant A): "Favoritter til:" + LFM/Spotify øverst, navn-piller under
         let friendsBar = '';
         const counts = bandFavCounts[p.band];
-        const btnFamily = `<div class="btn-row"><button class="icon-btn lfm" data-idx="${i}" data-action="compare" title="Lignende artister (Last.fm)">♫ LFM</button><button class="icon-btn spotify" data-idx="${i}" data-action="tracks" title="Topplåter (Spotify)">♪</button></div>`;
+        const btnFamily = `<div class="btn-row"><button class="icon-btn pos" data-idx="${i}" data-action="position" title="Hvor står du?">📍</button><button class="icon-btn lfm" data-idx="${i}" data-action="compare" title="Lignende artister (Last.fm)">♫ LFM</button><button class="icon-btn spotify" data-idx="${i}" data-action="tracks" title="Topplåter (Spotify)">♪</button></div>`;
         if (showFriendsOnCards) {
           let pillsHtml = '';
           if (counts && counts.friends.length > 0) {
@@ -789,8 +821,11 @@
       });
       content.querySelectorAll('[data-action]').forEach(btn => {
         btn.addEventListener('click', () => {
-          const band = window.currentPerfs[parseInt(btn.dataset.idx)].band;
-          btn.dataset.action === 'compare' ? showComparison(band) : showTracks(band);
+          const perf = window.currentPerfs[parseInt(btn.dataset.idx)];
+          const band = perf.band;
+          if (btn.dataset.action === 'compare') showComparison(band);
+          else if (btn.dataset.action === 'tracks') showTracks(band);
+          else if (btn.dataset.action === 'position') showConcertDetail(perf);
         });
       });
       // Klikk på navn-pille → vis fullt navn
@@ -1034,6 +1069,120 @@
       const modal = showModal('⚠️ Mer enn ' + AUTO_VENNER_UNDER + ' brukere', 'Auto-venner er slått av', body);
       modal.querySelector('#capOk').addEventListener('click', () => modal.remove());
       modal.querySelector('#capManage').addEventListener('click', () => { modal.remove(); showManageFriendsModal(); });
+    }
+
+    // ===== KONSERT-DETALJ MED TRIBUNE-KART =====
+    const ZONE_TAGS = ['FV','FM','FH','MV','MM','MH','BV','BM','BH'];
+    const ZONE_ROWS = [
+      { cls: 'foran', name: 'Foran (nærmest scenen)' },
+      { cls: 'midten', name: 'Midten' },
+      { cls: 'bak', name: 'Bak' }
+    ];
+
+    async function showConcertDetail(perf) {
+      const band = perf.band;
+      const stageName = perf.stage || '';
+      const stageColor = stageMap[stageName] || 'storm';
+      const sub = `${stageShort[stageName] || stageName} · ${perf.start}–${perf.end}`;
+      const body = `
+        <div class="concert-desc">${(bandGenres[band] || []).join(' • ') || 'Konsert'}</div>
+        <div class="arena">
+          <div class="arena-stage">🎸 SCENE</div>
+          <div class="arena-glow"></div>
+          <div id="zonesWrap"><p style="color:#71717a;text-align:center;font-size:0.85rem;">Laster posisjoner…</p></div>
+        </div>
+        <div class="meet-toggle">
+          <div class="mt-text">✨ Møt meg her<small>Synlig kun her — markerer at du søker selskap</small></div>
+          <button class="meet-btn" id="meetBtn" disabled>AV</button>
+        </div>
+        <div class="arena-legend">Trykk en sone for å plassere deg (lagres med en gang). Trykk en boble for å se navn. ✨ = søker selskap.</div>
+      `;
+      const modal = showModal(band, sub, body);
+
+      if (!currentUser || localMode) {
+        document.getElementById('zonesWrap').innerHTML = '<p style="color:#fca5a5;text-align:center;font-size:0.85rem;">Logg på for å markere hvor du står.</p>';
+        return;
+      }
+
+      // Tilstand for denne konserten
+      let myPos = null;      // 0-8 eller null
+      let meetMe = false;
+      let others = [];       // [{user, pos, meet}]
+
+      // Hent eksisterende posisjoner for bandet
+      try {
+        const res = await fetch(`/api/positions?band=${encodeURIComponent(band)}`);
+        const data = await res.json();
+        (data.positions || []).forEach(p => {
+          if (p.user === currentUser) { myPos = p.pos; meetMe = p.meet; }
+          else others.push(p);
+        });
+      } catch (e) { /* nett nede — viser tomt kart */ }
+
+      const meetBtn = modal.querySelector('#meetBtn');
+      meetBtn.disabled = false;
+      function updateMeetBtn() {
+        meetBtn.textContent = meetMe ? 'PÅ ✨' : 'AV';
+        meetBtn.classList.toggle('on', meetMe);
+      }
+      updateMeetBtn();
+
+      async function savePosition() {
+        try {
+          await fetch('/api/position', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: currentUser, band, pos: myPos, meet: meetMe })
+          });
+        } catch (e) { /* stille — lokal visning er allerede oppdatert */ }
+      }
+
+      function renderZones() {
+        const wrap = document.getElementById('zonesWrap');
+        if (!wrap) return;
+        let html = '';
+        for (let r = 0; r < 3; r++) {
+          html += `<div class="zone-side-label">${ZONE_ROWS[r].name}</div><div class="zone-row ${ZONE_ROWS[r].cls}">`;
+          for (let c = 0; c < 3; c++) {
+            const idx = r * 3 + c;
+            const mine = myPos === idx;
+            let bubs = '';
+            if (mine) bubs += `<span class="bub me ${meetMe ? 'seek' : ''}" data-name="Deg" data-seek="${meetMe}">DU</span>`;
+            others.filter(u => u.pos === idx).forEach(u => {
+              const init = computeInitials([u.user])[u.user];
+              bubs += `<span class="bub ${colorClass(u.user)} ${u.meet ? 'seek' : ''}" data-name="${u.user}" data-seek="${u.meet}">${init}</span>`;
+            });
+            html += `<div class="zone ${mine ? 'mine' : ''}" data-zone="${idx}"><span class="zone-tag">${ZONE_TAGS[idx]}</span>${bubs}</div>`;
+          }
+          html += `</div>`;
+        }
+        wrap.innerHTML = html;
+        // Klikk på sone → plasser meg
+        wrap.querySelectorAll('.zone').forEach(z => {
+          z.addEventListener('click', () => {
+            const idx = parseInt(z.dataset.zone);
+            myPos = (myPos === idx) ? null : idx; // klikk igjen = fjern meg
+            renderZones();
+            savePosition();
+          });
+        });
+        // Klikk på boble → vis navn
+        wrap.querySelectorAll('.bub').forEach(b => {
+          b.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const nm = b.dataset.name;
+            const seek = b.dataset.seek === 'true';
+            showModal(nm, 'På tribunen', `<p style="color:#d4d4d8;">${nm} står her${seek ? ' og <strong style="color:#fbbf24;">søker selskap ✨</strong>' : '.'}</p>`);
+          });
+        });
+      }
+      renderZones();
+
+      meetBtn.addEventListener('click', () => {
+        meetMe = !meetMe;
+        updateMeetBtn();
+        renderZones();
+        if (myPos !== null) savePosition();
+      });
     }
 
     // ===== ADMIN =====
