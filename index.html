@@ -251,6 +251,7 @@
     body.light .nametag { background: #f0e8d6; color: #3f2d10; }
     body.light .total-count { color: #9c8861; }
     body.light .no-results { color: #9c8861; }
+    body.light .day-header { background: #efe7d5; }
     body.light .day-header h2 { color: #3f2d10; }
     body.light .day-header p { color: #9c8861; }
     body.light .day-nav-btn { background: #e0d3b5; color: #5c4a2a; }
@@ -376,9 +377,12 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.8.1-beta';
+    const APP_VERSION = 'v2.8.2-beta';
     const APP_BUILD = '2026-06-26';
     const CHANGELOG = [
+      { version: 'v2.8.2-beta', date: '2026-06-26', changes: [
+        'Lyst tema: dag-boksen over lista er nå lys (var mørk)'
+      ]},
       { version: 'v2.8.1-beta', date: '2026-06-26', changes: [
         'Fikset bandnavn som brøt loddrett ved stor tekst',
         'Knapper (📍 LFM ♪) flyttet til egen rad så navnet får full bredde'
