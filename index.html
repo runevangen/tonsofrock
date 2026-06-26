@@ -17,8 +17,12 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Tekststørrelse: rot-skala styrer hele appen (alt bruker rem) */
+    html { font-size: 100%; }
+    html.size2 { font-size: 118%; }
+    html.size3 { font-size: 138%; }
     body { background: #000; color: #fff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-    .header { background: linear-gradient(to bottom, #27272a, #000); border-bottom: 1px solid #27272a; padding: 2rem 1rem; }
+    .header { background: linear-gradient(to bottom, #27272a, #000); border-bottom: 1px solid #27272a; padding: 3.5rem 1rem 2rem; }
     .header h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
     .header p { color: #999; font-size: 0.9rem; }
     .nav-container { background: #000; border-bottom: 1px solid #27272a; padding: 1rem; }
@@ -215,15 +219,19 @@
     body.light .header h1 { color: #3f2d10; }
     body.light .header p { color: #9c8861; }
     body.light .nav-container { background: #f5f0e6; border-bottom-color: #e0d3b5; }
-    body.light .nav-label { color: #9c8861; }
+    body.light .nav-label { color: #7c6a4d; }
     body.light .user-bar { background: #efe7d5; border-bottom-color: #e0d3b5; }
     body.light .user-bar .who { color: #5c4a2a; }
     body.light .user-bar button { background: #e0d3b5; color: #5c4a2a; }
     body.light .user-bar button:hover { background: #d6c9ad; color: #3f2d10; }
     body.light .btn-day, body.light .btn-stage { background: #efe7d5; color: #7c6a4d; }
+    body.light .btn-day.active { background: #c2410c; color: #fff; }
+    body.light .btn-day:hover { background: #e0d3b5; }
     body.light .segmented { background: #e8dcc4; }
     body.light .segmented button { color: #7c6a4d; }
+    body.light .segmented button.active { color: #fff; }
     body.light .btn-fav { background: #e0d3b5; color: #b45309; }
+    body.light .btn-fav.active { background: #ea580c; color: #fff; }
     /* Kort */
     body.light .performance { background: #fffdf8; box-shadow: 0 1px 3px rgba(120,80,20,0.12); }
     body.light .performance:hover { box-shadow: 0 6px 16px rgba(120,80,20,0.18); }
@@ -284,13 +292,30 @@
     .theme-toggle { background: transparent; border: none; cursor: pointer; font-size: 1.1rem; padding: 0.35rem 0.5rem; border-radius: 0.375rem; }
     body.light .theme-toggle:hover { background: #e0d3b5; }
     body:not(.light) .theme-toggle:hover { background: #27272a; }
+    /* Tekststørrelse-kontroll (AAA) */
+    .header-controls { position: absolute; top: 1rem; right: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .size-control { display: flex; gap: 0.2rem; }
+    .size-control button { background: #27272a; color: #a1a1aa; border: 1px solid #3f3f46; border-radius: 0.35rem; cursor: pointer; font-weight: 800; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; }
+    .size-control button.s1 { font-size: 0.8rem; }
+    .size-control button.s2 { font-size: 1rem; }
+    .size-control button.s3 { font-size: 1.2rem; }
+    .size-control button.active { background: #fbbf24; color: #000; border-color: #fbbf24; }
+    body.light .size-control button { background: #e0d3b5; color: #5c4a2a; border-color: #d6c9ad; }
+    body.light .size-control button.active { background: #ea580c; color: #fff; border-color: #ea580c; }
   </style>
 </head>
 <body>
   <div class="header" style="position:relative;">
     <h1>TONS OF ROCK</h1>
     <p>June 24–27, 2026 • Oslo</p>
-    <button class="theme-toggle" id="themeToggle" title="Bytt mellom mørkt og lyst tema" style="position:absolute;top:1rem;right:1rem;">🌙</button>
+    <div class="header-controls">
+      <div class="size-control" id="sizeControl">
+        <button class="s1" data-size="1" title="Normal tekst">A</button>
+        <button class="s2" data-size="2" title="Stor tekst">A</button>
+        <button class="s3" data-size="3" title="Størst tekst">A</button>
+      </div>
+      <button class="theme-toggle" id="themeToggle" title="Bytt mellom mørkt og lyst tema">🌙</button>
+    </div>
   </div>
 
   <div class="user-bar" id="userBar"></div>
@@ -332,9 +357,36 @@
     }
     applyTheme(loadTheme());
 
-    const APP_VERSION = 'v2.7.0-beta';
+    // ===== TEKSTSTØRRELSE (1/2/3) — lagres lokalt =====
+    function applySize(level) {
+      document.documentElement.classList.remove('size2', 'size3');
+      if (level === 2) document.documentElement.classList.add('size2');
+      if (level === 3) document.documentElement.classList.add('size3');
+      document.querySelectorAll('#sizeControl button').forEach(b => {
+        b.classList.toggle('active', parseInt(b.dataset.size) === level);
+      });
+    }
+    function loadSize() {
+      try { return parseInt(localStorage.getItem('tor_textsize')) || 1; } catch (e) { return 1; }
+    }
+    function setSize(level) {
+      try { localStorage.setItem('tor_textsize', level); } catch (e) {}
+      applySize(level);
+    }
+    applySize(loadSize());
+
+    const APP_VERSION = 'v2.8.0-beta';
     const APP_BUILD = '2026-06-26';
     const CHANGELOG = [
+      { version: 'v2.8.0-beta', date: '2026-06-26', changes: [
+        'Tekststørrelse-bryter (A/A/A) — Normal, Stor, Størst',
+        'Knapper og trykkflater vokser også, ikke bare teksten',
+        'Valget huskes til neste gang'
+      ]},
+      { version: 'v2.7.1-beta', date: '2026-06-26', changes: [
+        'Lyst tema: rettet dag-knapper og markering av valgt dag',
+        'Aktiv scene/favoritt-knapp vises nå riktig i lyst tema'
+      ]},
       { version: 'v2.7.0-beta', date: '2026-06-26', changes: [
         'Lyst «varm sand»-tema for bedre lesbarhet i festivalsola',
         'Tema-bryter (☀️/🌙) øverst til høyre — valget huskes'
@@ -953,6 +1005,9 @@
     versionEl.addEventListener('click', showChangelog);
     document.getElementById('adminLink').addEventListener('click', showAdminModal);
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    document.querySelectorAll('#sizeControl button').forEach(b => {
+      b.addEventListener('click', () => setSize(parseInt(b.dataset.size)));
+    });
 
     function showChangelog() {
       const html = CHANGELOG.map((entry, idx) => {
