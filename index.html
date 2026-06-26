@@ -238,9 +238,15 @@
   <script>
     // ============================================================
     // VERSJON — legg til ny oppføring øverst i CHANGELOG ved hver innsjekking
-    const APP_VERSION = 'v2.6.0-beta';
-    const APP_BUILD = '2026-06-25';
+    const APP_VERSION = 'v2.6.1-beta';
+    const APP_BUILD = '2026-06-26';
     const CHANGELOG = [
+      { version: 'v2.6.1-beta', date: '2026-06-26', changes: [
+        'Lineup: The Hellacopters erstatter Tom Morello (fredag, avlyst)',
+        'Fikset lagring av tribune-posisjon ved rask flytting',
+        'Tydelig feilmelding hvis posisjon ikke lagres',
+        '«Møt meg her» ber deg velge sone først'
+      ]},
       { version: 'v2.6.0-beta', date: '2026-06-25', changes: [
         'NYTT: tribune-kart — marker hvor du står på hver konsert (📍-knapp)',
         'Se hvor vennegjengen står på et arena-kart sett ovenfra',
@@ -350,7 +356,7 @@
       'Paul Myrehaug': ['Electronic'],
       'Ramonas Tea Party': ['Rock'],
       'Raga Rockers': ['Indian Rock'],
-      'Tom Morello': ['Hard Rock', 'Funk Metal'],
+      'The Hellacopters': ['Hard Rock', 'Rock n Roll'],
       'The Hives': ['Garage Rock', 'Punk'],
       'Joan Jett and the Blackhearts ?': ['Rock', 'Punk Rock', 'Hard Rock'],
       'Norge – Frankrike': ['Rock'],
@@ -412,7 +418,7 @@
       'Elder': ['Sanctuary', 'Dead Roots Stirring', 'Lore', 'Compendium', 'The Falling Veil'],
       'The Hives': ['Hate to Say I Told You So', 'Tick Tick Boom', 'Walk Idiot Walk', 'Main Offender', 'Come On!'],
       'Eivør': ['Trøllabundin', 'Falling Free', 'Tròdlabùndin', 'Salt', 'Mín móðir'],
-      'Tom Morello': ['Killing in the Name', 'Bulls on Parade', 'Guerrilla Radio', 'Like a Stone', 'Sleep Now in the Fire'],
+      'The Hellacopters': ['By the Grace of God', 'I Am Just a Lonesome Highway', 'No Song Unheard', 'Carry Me Home', 'Gotta Get Some Action'],
       'Bring Me The Horizon': ['Can You Feel My Heart', 'Throne', 'Drown', 'Doomed', 'Kingslayer'],
       'Dumdum Boys': ['Splitter Pine', 'Enkeltbillett', 'Vredens Dag', 'Marsboern', 'Tyven, tyven'],
       'Raga Rockers': ['Noen å hate', 'Hun er fri', 'Fanden, Fanden', 'Terrorister', 'Vil ha deg'],
@@ -440,7 +446,7 @@
     const schedule = [
       { day: 'Wednesday', date: 'June 24', stages: { 'Scream Stage': [{ band: 'Black Debbath', start: '14:00', end: '14:50' }, { band: 'Trivium', start: '15:55', end: '16:55' }, { band: 'Dumdum Boys', start: '18:15', end: '19:25' }, { band: 'Bring Me The Horizon', start: '21:25', end: '22:55' }], 'Vampire Stage': [{ band: 'Cavalera', start: '14:55', end: '15:45' }, { band: 'Babymetal', start: '17:05', end: '18:05' }, { band: 'The Offspring', start: '19:40', end: '21:10' }], 'Moonlight Stage': [{ band: 'Die Spitz', start: '14:10', end: '14:55' }, { band: 'President', start: '15:25', end: '16:10' }, { band: 'The Carburetors', start: '16:45', end: '17:35' }, { band: 'Blood Incantation', start: '18:55', end: '19:45' }, { band: 'BFD + Bathory', start: '20:20', end: '21:20' }], 'The Storm Stage': [{ band: 'Martin Beyer-Olsen', start: '14:20', end: '14:50' }, { band: 'Turdus Musicus', start: '16:00', end: '16:30' }, { band: 'Cécile Moroni', start: '18:10', end: '18:40' }, { band: 'Jordsjuk', start: '19:10', end: '19:40' }] } },
       { day: 'Thursday', date: 'June 25', stages: { 'Scream Stage': [{ band: 'Apocalyptica', start: '13:50', end: '14:35' }, { band: 'D-A-D', start: '15:45', end: '16:35' }, { band: 'Anthrax', start: '17:55', end: '18:55' }, { band: 'Iron Maiden', start: '20:45', end: '22:55' }], 'Vampire Stage': [{ band: 'Audrey Horne', start: '13:00', end: '13:45' }, { band: 'Imminence', start: '14:45', end: '15:35' }, { band: 'Suicidal Tendencies', start: '16:45', end: '17:45' }, { band: 'Alice Cooper', start: '19:10', end: '20:25' }], 'Moonlight Stage': [{ band: 'The Baboon Show', start: '13:15', end: '14:00' }, { band: 'Grandson', start: '14:35', end: '15:20' }, { band: 'Yonaka', start: '16:05', end: '16:55' }, { band: 'The Warning', start: '17:40', end: '18:30' }, { band: 'PaleFace Swiss', start: '19:20', end: '20:20' }], 'The Storm Stage': [{ band: 'Sarah Løvald', start: '14:00', end: '14:30' }, { band: 'Angell', start: '15:35', end: '16:05' }, { band: 'Paul Myrehaug', start: '17:45', end: '18:15' }, { band: 'Ramonas Tea Party', start: '18:40', end: '19:10' }] } },
-      { day: 'Friday', date: 'June 26', stages: { 'Scream Stage': [{ band: 'Raga Rockers', start: '13:20', end: '14:10' }, { band: 'Tom Morello', start: '15:05', end: '16:05' }, { band: 'The Hives', start: '17:10', end: '18:20' }, { band: 'Joan Jett and the Blackhearts ?', start: '19:30', end: '20:50' }, { band: 'Norge – Frankrike', start: '21:05', end: '22:55' }], 'Vampire Stage': [{ band: 'Eivør', start: '12:30', end: '13:20' }, { band: 'Queensrÿche', start: '14:10', end: '15:00' }, { band: 'Avatar', start: '16:10', end: '17:05' }, { band: 'Behemoth', start: '18:25', end: '19:20' }, { band: 'Rival Sons', start: '21:30', end: '22:30' }], 'Moonlight Stage': [{ band: 'The Funeral Portrait', start: '13:00', end: '13:40' }, { band: 'Kublai Khan TX', start: '14:10', end: '14:55' }, { band: 'Storm', start: '16:25', end: '16:10' }, { band: 'Dogstar', start: '16:45', end: '17:35' }, { band: 'Elder', start: '18:10', end: '19:00' }, { band: 'Mayhem', start: '19:40', end: '20:50' }, { band: 'Possessed', start: '21:40', end: '22:30' }], 'The Storm Stage': [{ band: 'Mørk Medisin + Dag Sørås & Espen Abrahamsen', start: '15:00', end: '15:30' }, { band: 'Høst', start: '17:10', end: '17:40' }, { band: 'Nora Svenningsen', start: '18:10', end: '18:40' }, { band: 'Koco Franco', start: '19:10', end: '19:40' }] } },
+      { day: 'Friday', date: 'June 26', stages: { 'Scream Stage': [{ band: 'Raga Rockers', start: '13:20', end: '14:10' }, { band: 'The Hellacopters', start: '15:05', end: '16:05' }, { band: 'The Hives', start: '17:10', end: '18:20' }, { band: 'Joan Jett and the Blackhearts ?', start: '19:30', end: '20:50' }, { band: 'Norge – Frankrike', start: '21:05', end: '22:55' }], 'Vampire Stage': [{ band: 'Eivør', start: '12:30', end: '13:20' }, { band: 'Queensrÿche', start: '14:10', end: '15:00' }, { band: 'Avatar', start: '16:10', end: '17:05' }, { band: 'Behemoth', start: '18:25', end: '19:20' }, { band: 'Rival Sons', start: '21:30', end: '22:30' }], 'Moonlight Stage': [{ band: 'The Funeral Portrait', start: '13:00', end: '13:40' }, { band: 'Kublai Khan TX', start: '14:10', end: '14:55' }, { band: 'Storm', start: '16:25', end: '16:10' }, { band: 'Dogstar', start: '16:45', end: '17:35' }, { band: 'Elder', start: '18:10', end: '19:00' }, { band: 'Mayhem', start: '19:40', end: '20:50' }, { band: 'Possessed', start: '21:40', end: '22:30' }], 'The Storm Stage': [{ band: 'Mørk Medisin + Dag Sørås & Espen Abrahamsen', start: '15:00', end: '15:30' }, { band: 'Høst', start: '17:10', end: '17:40' }, { band: 'Nora Svenningsen', start: '18:10', end: '18:40' }, { band: 'Koco Franco', start: '19:10', end: '19:40' }] } },
       { day: 'Saturday', date: 'June 27', stages: { 'Scream Stage': [{ band: 'DDR', start: '14:00', end: '14:50' }, { band: 'Sepultura', start: '16:10', end: '17:10' }, { band: 'Accept', start: '18:40', end: '19:55' }, { band: 'Limp Bizkit', start: '21:25', end: '22:55' }], 'Vampire Stage': [{ band: 'Pain', start: '13:00', end: '13:50' }, { band: 'Black Label Society', start: '15:05', end: '15:55' }, { band: 'Leprous', start: '17:25', end: '18:25' }, { band: 'A Perfect Circle', start: '20:05', end: '21:15' }], 'Moonlight Stage': [{ band: 'Ego Kill Talent', start: '13:00', end: '13:40' }, { band: 'Slay Squad', start: '14:10', end: '14:55' }, { band: 'Gaerea', start: '15:25', end: '16:10' }, { band: 'Gatecreeper', start: '19:45', end: '17:35' }, { band: 'Blood Red Throne', start: '18:55', end: '19:45' }, { band: 'Death To All', start: '20:15', end: '21:15' }], 'The Storm Stage': [{ band: 'Javad El Bakali', start: '14:00', end: '14:30' }, { band: 'You Know Who', start: '16:00', end: '16:30' }, { band: 'Bill Bailey', start: '18:25', end: '18:55' }, { band: 'Baphy', start: '19:30', end: '20:00' }] } }
     ];
 
@@ -1127,13 +1133,34 @@
       }
       updateMeetBtn();
 
-      async function savePosition() {
-        try {
-          await fetch('/api/position', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user: currentUser, band, pos: myPos, meet: meetMe })
-          });
-        } catch (e) { /* stille — lokal visning er allerede oppdatert */ }
+      // Sekvensiell lagring — unngår at raske klikk racer og overskriver hverandre
+      let saveChain = Promise.resolve();
+      let saveError = false;
+      function savePosition() {
+        saveChain = saveChain.then(async () => {
+          try {
+            const res = await fetch('/api/position', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user: currentUser, band, pos: myPos, meet: meetMe })
+            });
+            if (!res.ok) throw new Error('status ' + res.status);
+            saveError = false;
+          } catch (e) {
+            saveError = true;
+            const wrap = document.getElementById('zonesWrap');
+            if (wrap) {
+              let warn = document.getElementById('posWarn');
+              if (!warn) {
+                warn = document.createElement('div');
+                warn.id = 'posWarn';
+                warn.style.cssText = 'color:#fca5a5;font-size:0.8rem;text-align:center;margin-top:0.5rem;';
+                wrap.parentElement.appendChild(warn);
+              }
+              warn.textContent = '⚠️ Fikk ikke lagret posisjonen — sjekk nett og prøv igjen.';
+            }
+          }
+        });
+        return saveChain;
       }
 
       function renderZones() {
@@ -1156,11 +1183,21 @@
           html += `</div>`;
         }
         wrap.innerHTML = html;
-        // Klikk på sone → plasser meg
+        // Fjern evt. gammel feilmelding ved ny handling
+        const oldWarn = document.getElementById('posWarn');
+        if (oldWarn && !saveError) oldWarn.remove();
+        // Klikk på sone → plasser meg (eller fjern meg om jeg klikker samme sone)
         wrap.querySelectorAll('.zone').forEach(z => {
           z.addEventListener('click', () => {
             const idx = parseInt(z.dataset.zone);
-            myPos = (myPos === idx) ? null : idx; // klikk igjen = fjern meg
+            if (myPos === idx) {
+              // Klikk på egen sone = forlat kartet
+              myPos = null;
+              meetMe = false;      // nullstill "møt meg" når du forlater
+              updateMeetBtn();
+            } else {
+              myPos = idx;
+            }
             renderZones();
             savePosition();
           });
@@ -1181,7 +1218,19 @@
         meetMe = !meetMe;
         updateMeetBtn();
         renderZones();
-        if (myPos !== null) savePosition();
+        if (myPos !== null) {
+          savePosition();
+        } else if (meetMe) {
+          // Søker selskap, men står ingen steder ennå — be om sone først
+          let warn = document.getElementById('posWarn');
+          if (!warn) {
+            warn = document.createElement('div');
+            warn.id = 'posWarn';
+            warn.style.cssText = 'color:#fbbf24;font-size:0.8rem;text-align:center;margin-top:0.5rem;';
+            document.getElementById('zonesWrap').parentElement.appendChild(warn);
+          }
+          warn.textContent = '👆 Velg en sone først, så lagres «møt meg her».';
+        }
       });
     }
 
