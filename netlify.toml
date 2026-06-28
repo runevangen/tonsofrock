@@ -32,3 +32,8 @@
   from = "/api/position"
   to = "/.netlify/functions/favorites"
   status = 200
+
+[[redirects]]
+  from = "/api/lineup"
+  to = "/.netlify/functions/lineup"
+  status = 200

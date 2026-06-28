@@ -166,6 +166,31 @@
     .admin-bar { display: flex; gap: 0.5rem; margin-top: 1rem; }
     .admin-bar button { flex: 1; }
     .warn-box { background: rgba(220,38,38,0.15); border: 1px solid #dc2626; color: #fca5a5; padding: 0.6rem; border-radius: 0.375rem; font-size: 0.85rem; margin-bottom: 1rem; }
+    /* Admin: rediger program */
+    .lineup-admin-section { margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid #27272a; }
+    .lineup-admin-section h4 { font-size: 0.95rem; margin-bottom: 0.5rem; color: #fbbf24; }
+    .lineup-search { width: 100%; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.4rem; padding: 0.55rem 0.7rem; color: #fff; font-size: 0.85rem; margin-bottom: 0.7rem; }
+    .lineup-search::placeholder { color: #71717a; }
+    .band-row { display: flex; align-items: center; gap: 0.6rem; background: #27272a; border-radius: 0.5rem; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; }
+    .band-row .stage-dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; flex-shrink: 0; }
+    .band-row .binfo { flex: 1; min-width: 0; }
+    .band-row .bname { font-weight: 700; font-size: 0.9rem; color: #fff; }
+    .band-row .bmeta { font-size: 0.73rem; color: #a1a1aa; margin-top: 0.1rem; }
+    .row-btn { background: #3f3f46; border: none; border-radius: 0.35rem; width: 1.9rem; height: 1.9rem; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; flex-shrink: 0; }
+    .row-btn.del:hover { background: #7f1d1d; }
+    .row-btn.edit:hover { background: #52525b; }
+    .dot-scream { background: #dc2626; } .dot-vampire { background: #9333ea; }
+    .dot-moonlight { background: #2563eb; } .dot-storm { background: #57534e; }
+    .add-band-btn { width: 100%; background: #27272a; border: 1px dashed #52525b; color: #a1a1aa; border-radius: 0.5rem; padding: 0.65rem; font-weight: 700; font-size: 0.83rem; cursor: pointer; }
+    .add-band-btn:hover { border-color: #71717a; color: #fff; }
+    .lineup-edit-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: flex-start; justify-content: center; padding: 1rem; z-index: 200; overflow-y: auto; }
+    .lineup-edit-modal { background: #18181b; border: 1px solid #27272a; border-radius: 0.6rem; max-width: 420px; width: 100%; padding: 1.3rem; margin-top: 1.5rem; }
+    .lineup-edit-modal h3 { font-size: 1.05rem; margin-bottom: 1rem; }
+    .lf-field { margin-bottom: 0.85rem; }
+    .lf-field label { display: block; font-size: 0.76rem; color: #a1a1aa; margin-bottom: 0.3rem; font-weight: 600; }
+    .lf-field input, .lf-field select { width: 100%; background: #27272a; border: 1px solid #3f3f46; border-radius: 0.4rem; padding: 0.55rem 0.65rem; color: #fff; font-size: 0.85rem; }
+    .lf-row { display: flex; gap: 0.6rem; }
+    .lf-row .lf-field { flex: 1; }
     .cap-warn { background: rgba(234,88,12,0.15); border: 1px solid #ea580c; color: #fdba74; border-radius: 0.5rem; padding: 0.8rem 1rem; font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.5rem; }
     .cap-warn strong { color: #fff; }
     .performance-right { display: flex; gap: 0.5rem; align-items: flex-start; flex-shrink: 0; flex-col; }
@@ -377,9 +402,15 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.8.2-beta';
+    const APP_VERSION = 'v2.9.0-beta';
     const APP_BUILD = '2026-06-26';
     const CHANGELOG = [
+      { version: 'v2.9.0-beta', date: '2026-06-26', changes: [
+        'NYTT: admin kan redigere band, tid, scene, sjanger og type direkte i appen',
+        'Programmet lagres nå i skyen i stedet for i koden — endringer er live umiddelbart',
+        'Legg til / slett oppføringer + «Tilbakestill til original» som sikkerhetsnett',
+        'Søk i bandlisten i admin-panelet'
+      ]},
       { version: 'v2.8.2-beta', date: '2026-06-26', changes: [
         'Lyst tema: dag-boksen over lista er nå lys (var mørk)'
       ]},
@@ -480,79 +511,9 @@
     ];
     // ============================================================
 
-    const bandGenres = {
-      'Black Debbath': ['Heavy Metal', 'Doom Metal'],
-      'Trivium': ['Metalcore', 'Heavy Metal'],
-      'Dumdum Boys': ['Post-Punk'],
-      'Bring Me The Horizon': ['Metalcore', 'Pop'],
-      'Cavalera': ['Thrash Metal'],
-      'Babymetal': ['Metal', 'Pop Metal'],
-      'The Offspring': ['Punk Rock'],
-      'Die Spitz': ['Norwegian Rock'],
-      'President': ['Rock'],
-      'The Carburetors': ['Hard Rock', 'Rock'],
-      'Blood Incantation': ['Death Metal'],
-      'BFD + Bathory': ['Black Metal'],
-      'Martin Beyer-Olsen': ['Folk'],
-      'Turdus Musicus': ['Norwegian Folk'],
-      'Cécile Moroni': ['Norwegian Folk'],
-      'Jordsjuk': ['Traditional Norwegian'],
-      'Apocalyptica': ['Symphonic Metal', 'Cello Metal'],
-      'D-A-D': ['Hard Rock', 'Heavy Metal'],
-      'Anthrax': ['Thrash Metal'],
-      'Iron Maiden': ['Heavy Metal', 'NWOBHM'],
-      'Audrey Horne': ['Hard Rock', 'Heavy Metal'],
-      'Imminence': ['Alternative Metal'],
-      'Suicidal Tendencies': ['Funk Metal'],
-      'Alice Cooper': ['Shock Rock', 'Hard Rock'],
-      'The Baboon Show': ['Norwegian Rock'],
-      'Grandson': ['Alternative Rock', 'Rap Rock'],
-      'Yonaka': ['Alternative Rock'],
-      'The Warning': ['Pop Rock'],
-      'PaleFace Swiss': ['Swiss Rock'],
-      'Sarah Løvald': ['Norwegian Pop'],
-      'Angell': ['Black Metal', 'Death Metal'],
-      'Paul Myrehaug': ['Electronic'],
-      'Ramonas Tea Party': ['Rock'],
-      'Raga Rockers': ['Indian Rock'],
-      'The Hellacopters': ['Hard Rock', 'Rock n Roll'],
-      'The Hives': ['Garage Rock', 'Punk'],
-      'Joan Jett and the Blackhearts ?': ['Rock', 'Punk Rock', 'Hard Rock'],
-      'Norge – Frankrike': ['Rock'],
-      'Eivør': ['Folk Pop'],
-      'Queensrÿche': ['Progressive Metal'],
-      'Avatar': ['Melodic Metal'],
-      'Behemoth': ['Black Metal', 'Death Metal'],
-      'Rival Sons': ['Hard Rock', 'Blues Rock'],
-      'The Funeral Portrait': ['Alternative Metal'],
-      'Kublai Khan TX': ['Metalcore'],
-      'Storm': ['Black Metal'],
-      'Dogstar': ['Alternative Rock'],
-      'Elder': ['Stoner Rock'],
-      'Mayhem': ['Black Metal'],
-      'Possessed': ['Death Metal'],
-      'Mørk Medisin + Dag Sørås & Espen Abrahamsen': ['Jazz'],
-      'Høst': ['Prog Rock', 'Hard Rock'],
-      'Nora Svenningsen': ['Norwegian Pop'],
-      'Koco Franco': ['Brazilian Rock'],
-      'DDR': ['Hard Rock'],
-      'Sepultura': ['Thrash Metal'],
-      'Accept': ['Heavy Metal', 'Speed Metal'],
-      'Pain': ['Industrial Metal'],
-      'Black Label Society': ['Heavy Metal', 'Doom Metal'],
-      'Leprous': ['Progressive Metal'],
-      'A Perfect Circle': ['Alternative Metal'],
-      'Ego Kill Talent': ['Metalcore'],
-      'Slay Squad': ['Rock'],
-      'Gaerea': ['Black Metal'],
-      'Gatecreeper': ['Death Metal'],
-      'Blood Red Throne': ['Death Metal'],
-      'Death To All': ['Metal'],
-      'Javad El Bakali': ['Soul'],
-      'You Know Who': ['Rock'],
-      'Bill Bailey': ['Comedy Rock'],
-      'Baphy': ['Rock']
-    };
+    // Sjanger per band — bygges nå dynamisk fra programmet (se rebuildScheduleFromFlat)
+    // i stedet for en hardkodet liste, slik at admin kan redigere sjanger per oppføring.
+    let bandGenres = {};
 
     const popularTracks = {
       'Iron Maiden': ['The Trooper', 'Run to the Hills', 'Hallowed Be Thy Name', 'Fear of the Dark', 'The Number of the Beast'],
@@ -602,12 +563,63 @@
       'Dogstar': ['Everything Turns Around', 'Glimmer', 'Breach', 'How the Story Ends', 'Sleep']
     };
 
-    const schedule = [
-      { day: 'Wednesday', date: 'June 24', stages: { 'Scream Stage': [{ band: 'Black Debbath', start: '14:00', end: '14:50' }, { band: 'Trivium', start: '15:55', end: '16:55' }, { band: 'Dumdum Boys', start: '18:15', end: '19:25' }, { band: 'Bring Me The Horizon', start: '21:25', end: '22:55' }], 'Vampire Stage': [{ band: 'Cavalera', start: '14:55', end: '15:45' }, { band: 'Babymetal', start: '17:05', end: '18:05' }, { band: 'The Offspring', start: '19:40', end: '21:10' }], 'Moonlight Stage': [{ band: 'Die Spitz', start: '14:10', end: '14:55' }, { band: 'President', start: '15:25', end: '16:10' }, { band: 'The Carburetors', start: '16:45', end: '17:35' }, { band: 'Blood Incantation', start: '18:55', end: '19:45' }, { band: 'BFD + Bathory', start: '20:20', end: '21:20' }], 'The Storm Stage': [{ band: 'Martin Beyer-Olsen', start: '14:20', end: '14:50' }, { band: 'Turdus Musicus', start: '16:00', end: '16:30' }, { band: 'Cécile Moroni', start: '18:10', end: '18:40' }, { band: 'Jordsjuk', start: '19:10', end: '19:40' }] } },
-      { day: 'Thursday', date: 'June 25', stages: { 'Scream Stage': [{ band: 'Apocalyptica', start: '13:50', end: '14:35' }, { band: 'D-A-D', start: '15:45', end: '16:35' }, { band: 'Anthrax', start: '17:55', end: '18:55' }, { band: 'Iron Maiden', start: '20:45', end: '22:55' }], 'Vampire Stage': [{ band: 'Audrey Horne', start: '13:00', end: '13:45' }, { band: 'Imminence', start: '14:45', end: '15:35' }, { band: 'Suicidal Tendencies', start: '16:45', end: '17:45' }, { band: 'Alice Cooper', start: '19:10', end: '20:25' }], 'Moonlight Stage': [{ band: 'The Baboon Show', start: '13:15', end: '14:00' }, { band: 'Grandson', start: '14:35', end: '15:20' }, { band: 'Yonaka', start: '16:05', end: '16:55' }, { band: 'The Warning', start: '17:40', end: '18:30' }, { band: 'PaleFace Swiss', start: '19:20', end: '20:20' }], 'The Storm Stage': [{ band: 'Sarah Løvald', start: '14:00', end: '14:30' }, { band: 'Angell', start: '15:35', end: '16:05' }, { band: 'Paul Myrehaug', start: '17:45', end: '18:15' }, { band: 'Ramonas Tea Party', start: '18:40', end: '19:10' }] } },
-      { day: 'Friday', date: 'June 26', stages: { 'Scream Stage': [{ band: 'Raga Rockers', start: '13:20', end: '14:10' }, { band: 'The Hellacopters', start: '15:05', end: '16:05' }, { band: 'The Hives', start: '17:10', end: '18:20' }, { band: 'Joan Jett and the Blackhearts ?', start: '19:30', end: '20:50' }, { band: 'Norge – Frankrike', start: '21:05', end: '22:55' }], 'Vampire Stage': [{ band: 'Eivør', start: '12:30', end: '13:20' }, { band: 'Queensrÿche', start: '14:10', end: '15:00' }, { band: 'Avatar', start: '16:10', end: '17:05' }, { band: 'Behemoth', start: '18:25', end: '19:20' }, { band: 'Rival Sons', start: '21:30', end: '22:30' }], 'Moonlight Stage': [{ band: 'The Funeral Portrait', start: '13:00', end: '13:40' }, { band: 'Kublai Khan TX', start: '14:10', end: '14:55' }, { band: 'Storm', start: '16:25', end: '16:10' }, { band: 'Dogstar', start: '16:45', end: '17:35' }, { band: 'Elder', start: '18:10', end: '19:00' }, { band: 'Mayhem', start: '19:40', end: '20:50' }, { band: 'Possessed', start: '21:40', end: '22:30' }], 'The Storm Stage': [{ band: 'Mørk Medisin + Dag Sørås & Espen Abrahamsen', start: '15:00', end: '15:30' }, { band: 'Høst', start: '17:10', end: '17:40' }, { band: 'Nora Svenningsen', start: '18:10', end: '18:40' }, { band: 'Koco Franco', start: '19:10', end: '19:40' }] } },
-      { day: 'Saturday', date: 'June 27', stages: { 'Scream Stage': [{ band: 'DDR', start: '14:00', end: '14:50' }, { band: 'Sepultura', start: '16:10', end: '17:10' }, { band: 'Accept', start: '18:40', end: '19:55' }, { band: 'Limp Bizkit', start: '21:25', end: '22:55' }], 'Vampire Stage': [{ band: 'Pain', start: '13:00', end: '13:50' }, { band: 'Black Label Society', start: '15:05', end: '15:55' }, { band: 'Leprous', start: '17:25', end: '18:25' }, { band: 'A Perfect Circle', start: '20:05', end: '21:15' }], 'Moonlight Stage': [{ band: 'Ego Kill Talent', start: '13:00', end: '13:40' }, { band: 'Slay Squad', start: '14:10', end: '14:55' }, { band: 'Gaerea', start: '15:25', end: '16:10' }, { band: 'Gatecreeper', start: '19:45', end: '17:35' }, { band: 'Blood Red Throne', start: '18:55', end: '19:45' }, { band: 'Death To All', start: '20:15', end: '21:15' }], 'The Storm Stage': [{ band: 'Javad El Bakali', start: '14:00', end: '14:30' }, { band: 'You Know Who', start: '16:00', end: '16:30' }, { band: 'Bill Bailey', start: '18:25', end: '18:55' }, { band: 'Baphy', start: '19:30', end: '20:00' }] } }
-    ];
+    // Programmet hentes nå fra /api/lineup (Netlify Blobs) ved oppstart,
+    // slik at admin kan redigere band/tid/scene/sjanger uten ny kode-deploy.
+    // `schedule` bygges opp av rebuildScheduleFromFlat() når dataen er hentet.
+    let schedule = [];
+
+    // Dag -> dato-tekst. Selve dagene (4 faste festivaldager) er IKKE
+    // redigerbare i admin denne runden — bare hvilke oppføringer som ligger på dem.
+    const DAY_DATES = { Wednesday: 'June 24', Thursday: 'June 25', Friday: 'June 26', Saturday: 'June 27' };
+    const DAY_ORDER = ['Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    // Reserve-kopi av programmet (samme data som ligger i Netlify Blobs ved
+    // første oppstart). Brukes BARE hvis /api/lineup ikke svarer, så appen
+    // aldri viser en blank liste pga. nettverksfeil.
+    const FALLBACK_LINEUP = [{"id":"p001","band":"Black Debbath","day":"Wednesday","stage":"Scream Stage","start":"14:00","end":"14:50","genre":["Heavy Metal","Doom Metal"],"type":"band"},{"id":"p002","band":"Trivium","day":"Wednesday","stage":"Scream Stage","start":"15:55","end":"16:55","genre":["Metalcore","Heavy Metal"],"type":"band"},{"id":"p003","band":"Dumdum Boys","day":"Wednesday","stage":"Scream Stage","start":"18:15","end":"19:25","genre":["Post-Punk"],"type":"band"},{"id":"p004","band":"Bring Me The Horizon","day":"Wednesday","stage":"Scream Stage","start":"21:25","end":"22:55","genre":["Metalcore","Pop"],"type":"band"},{"id":"p005","band":"Cavalera","day":"Wednesday","stage":"Vampire Stage","start":"14:55","end":"15:45","genre":["Thrash Metal"],"type":"band"},{"id":"p006","band":"Babymetal","day":"Wednesday","stage":"Vampire Stage","start":"17:05","end":"18:05","genre":["Metal","Pop Metal"],"type":"band"},{"id":"p007","band":"The Offspring","day":"Wednesday","stage":"Vampire Stage","start":"19:40","end":"21:10","genre":["Punk Rock"],"type":"band"},{"id":"p008","band":"Die Spitz","day":"Wednesday","stage":"Moonlight Stage","start":"14:10","end":"14:55","genre":["Norwegian Rock"],"type":"band"},{"id":"p009","band":"President","day":"Wednesday","stage":"Moonlight Stage","start":"15:25","end":"16:10","genre":["Rock"],"type":"band"},{"id":"p010","band":"The Carburetors","day":"Wednesday","stage":"Moonlight Stage","start":"16:45","end":"17:35","genre":["Hard Rock","Rock"],"type":"band"},{"id":"p011","band":"Blood Incantation","day":"Wednesday","stage":"Moonlight Stage","start":"18:55","end":"19:45","genre":["Death Metal"],"type":"band"},{"id":"p012","band":"BFD + Bathory","day":"Wednesday","stage":"Moonlight Stage","start":"20:20","end":"21:20","genre":["Black Metal"],"type":"band"},{"id":"p013","band":"Martin Beyer-Olsen","day":"Wednesday","stage":"The Storm Stage","start":"14:20","end":"14:50","genre":["Folk"],"type":"annet"},{"id":"p014","band":"Turdus Musicus","day":"Wednesday","stage":"The Storm Stage","start":"16:00","end":"16:30","genre":["Norwegian Folk"],"type":"band"},{"id":"p015","band":"Cécile Moroni","day":"Wednesday","stage":"The Storm Stage","start":"18:10","end":"18:40","genre":["Norwegian Folk"],"type":"annet"},{"id":"p016","band":"Jordsjuk","day":"Wednesday","stage":"The Storm Stage","start":"19:10","end":"19:40","genre":["Traditional Norwegian"],"type":"band"},{"id":"p017","band":"Apocalyptica","day":"Thursday","stage":"Scream Stage","start":"13:50","end":"14:35","genre":["Symphonic Metal","Cello Metal"],"type":"band"},{"id":"p018","band":"D-A-D","day":"Thursday","stage":"Scream Stage","start":"15:45","end":"16:35","genre":["Hard Rock","Heavy Metal"],"type":"band"},{"id":"p019","band":"Anthrax","day":"Thursday","stage":"Scream Stage","start":"17:55","end":"18:55","genre":["Thrash Metal"],"type":"band"},{"id":"p020","band":"Iron Maiden","day":"Thursday","stage":"Scream Stage","start":"20:45","end":"22:55","genre":["Heavy Metal","NWOBHM"],"type":"band"},{"id":"p021","band":"Audrey Horne","day":"Thursday","stage":"Vampire Stage","start":"13:00","end":"13:45","genre":["Hard Rock","Heavy Metal"],"type":"band"},{"id":"p022","band":"Imminence","day":"Thursday","stage":"Vampire Stage","start":"14:45","end":"15:35","genre":["Alternative Metal"],"type":"band"},{"id":"p023","band":"Suicidal Tendencies","day":"Thursday","stage":"Vampire Stage","start":"16:45","end":"17:45","genre":["Funk Metal"],"type":"band"},{"id":"p024","band":"Alice Cooper","day":"Thursday","stage":"Vampire Stage","start":"19:10","end":"20:25","genre":["Shock Rock","Hard Rock"],"type":"band"},{"id":"p025","band":"The Baboon Show","day":"Thursday","stage":"Moonlight Stage","start":"13:15","end":"14:00","genre":["Norwegian Rock"],"type":"band"},{"id":"p026","band":"Grandson","day":"Thursday","stage":"Moonlight Stage","start":"14:35","end":"15:20","genre":["Alternative Rock","Rap Rock"],"type":"band"},{"id":"p027","band":"Yonaka","day":"Thursday","stage":"Moonlight Stage","start":"16:05","end":"16:55","genre":["Alternative Rock"],"type":"band"},{"id":"p028","band":"The Warning","day":"Thursday","stage":"Moonlight Stage","start":"17:40","end":"18:30","genre":["Pop Rock"],"type":"band"},{"id":"p029","band":"PaleFace Swiss","day":"Thursday","stage":"Moonlight Stage","start":"19:20","end":"20:20","genre":["Swiss Rock"],"type":"band"},{"id":"p030","band":"Sarah Løvald","day":"Thursday","stage":"The Storm Stage","start":"14:00","end":"14:30","genre":["Norwegian Pop"],"type":"annet"},{"id":"p031","band":"Angell","day":"Thursday","stage":"The Storm Stage","start":"15:35","end":"16:05","genre":["Black Metal","Death Metal"],"type":"band"},{"id":"p032","band":"Paul Myrehaug","day":"Thursday","stage":"The Storm Stage","start":"17:45","end":"18:15","genre":["Electronic"],"type":"annet"},{"id":"p033","band":"Ramonas Tea Party","day":"Thursday","stage":"The Storm Stage","start":"18:40","end":"19:10","genre":["Rock"],"type":"band"},{"id":"p034","band":"Raga Rockers","day":"Friday","stage":"Scream Stage","start":"13:20","end":"14:10","genre":["Indian Rock"],"type":"band"},{"id":"p035","band":"The Hellacopters","day":"Friday","stage":"Scream Stage","start":"15:05","end":"16:05","genre":["Hard Rock","Rock n Roll"],"type":"band"},{"id":"p036","band":"The Hives","day":"Friday","stage":"Scream Stage","start":"17:10","end":"18:20","genre":["Garage Rock","Punk"],"type":"band"},{"id":"p037","band":"Joan Jett and the Blackhearts ?","day":"Friday","stage":"Scream Stage","start":"19:30","end":"20:50","genre":["Rock","Punk Rock","Hard Rock"],"type":"band"},{"id":"p038","band":"Norge – Frankrike","day":"Friday","stage":"Scream Stage","start":"21:05","end":"22:55","genre":["Rock"],"type":"event"},{"id":"p039","band":"Eivør","day":"Friday","stage":"Vampire Stage","start":"12:30","end":"13:20","genre":["Folk Pop"],"type":"band"},{"id":"p040","band":"Queensrÿche","day":"Friday","stage":"Vampire Stage","start":"14:10","end":"15:00","genre":["Progressive Metal"],"type":"band"},{"id":"p041","band":"Avatar","day":"Friday","stage":"Vampire Stage","start":"16:10","end":"17:05","genre":["Melodic Metal"],"type":"band"},{"id":"p042","band":"Behemoth","day":"Friday","stage":"Vampire Stage","start":"18:25","end":"19:20","genre":["Black Metal","Death Metal"],"type":"band"},{"id":"p043","band":"Rival Sons","day":"Friday","stage":"Vampire Stage","start":"21:30","end":"22:30","genre":["Hard Rock","Blues Rock"],"type":"band"},{"id":"p044","band":"The Funeral Portrait","day":"Friday","stage":"Moonlight Stage","start":"13:00","end":"13:40","genre":["Alternative Metal"],"type":"band"},{"id":"p045","band":"Kublai Khan TX","day":"Friday","stage":"Moonlight Stage","start":"14:10","end":"14:55","genre":["Metalcore"],"type":"band"},{"id":"p046","band":"Storm","day":"Friday","stage":"Moonlight Stage","start":"16:25","end":"16:10","genre":["Black Metal"],"type":"band"},{"id":"p047","band":"Dogstar","day":"Friday","stage":"Moonlight Stage","start":"16:45","end":"17:35","genre":["Alternative Rock"],"type":"band"},{"id":"p048","band":"Elder","day":"Friday","stage":"Moonlight Stage","start":"18:10","end":"19:00","genre":["Stoner Rock"],"type":"band"},{"id":"p049","band":"Mayhem","day":"Friday","stage":"Moonlight Stage","start":"19:40","end":"20:50","genre":["Black Metal"],"type":"band"},{"id":"p050","band":"Possessed","day":"Friday","stage":"Moonlight Stage","start":"21:40","end":"22:30","genre":["Death Metal"],"type":"band"},{"id":"p051","band":"Mørk Medisin + Dag Sørås & Espen Abrahamsen","day":"Friday","stage":"The Storm Stage","start":"15:00","end":"15:30","genre":["Jazz"],"type":"annet"},{"id":"p052","band":"Høst","day":"Friday","stage":"The Storm Stage","start":"17:10","end":"17:40","genre":["Prog Rock","Hard Rock"],"type":"band"},{"id":"p053","band":"Nora Svenningsen","day":"Friday","stage":"The Storm Stage","start":"18:10","end":"18:40","genre":["Norwegian Pop"],"type":"annet"},{"id":"p054","band":"Koco Franco","day":"Friday","stage":"The Storm Stage","start":"19:10","end":"19:40","genre":["Brazilian Rock"],"type":"band"},{"id":"p055","band":"DDR","day":"Saturday","stage":"Scream Stage","start":"14:00","end":"14:50","genre":["Hard Rock"],"type":"band"},{"id":"p056","band":"Sepultura","day":"Saturday","stage":"Scream Stage","start":"16:10","end":"17:10","genre":["Thrash Metal"],"type":"band"},{"id":"p057","band":"Accept","day":"Saturday","stage":"Scream Stage","start":"18:40","end":"19:55","genre":["Heavy Metal","Speed Metal"],"type":"band"},{"id":"p058","band":"Limp Bizkit","day":"Saturday","stage":"Scream Stage","start":"21:25","end":"22:55","genre":[],"type":"band"},{"id":"p059","band":"Pain","day":"Saturday","stage":"Vampire Stage","start":"13:00","end":"13:50","genre":["Industrial Metal"],"type":"band"},{"id":"p060","band":"Black Label Society","day":"Saturday","stage":"Vampire Stage","start":"15:05","end":"15:55","genre":["Heavy Metal","Doom Metal"],"type":"band"},{"id":"p061","band":"Leprous","day":"Saturday","stage":"Vampire Stage","start":"17:25","end":"18:25","genre":["Progressive Metal"],"type":"band"},{"id":"p062","band":"A Perfect Circle","day":"Saturday","stage":"Vampire Stage","start":"20:05","end":"21:15","genre":["Alternative Metal"],"type":"band"},{"id":"p063","band":"Ego Kill Talent","day":"Saturday","stage":"Moonlight Stage","start":"13:00","end":"13:40","genre":["Metalcore"],"type":"band"},{"id":"p064","band":"Slay Squad","day":"Saturday","stage":"Moonlight Stage","start":"14:10","end":"14:55","genre":["Rock"],"type":"band"},{"id":"p065","band":"Gaerea","day":"Saturday","stage":"Moonlight Stage","start":"15:25","end":"16:10","genre":["Black Metal"],"type":"band"},{"id":"p066","band":"Gatecreeper","day":"Saturday","stage":"Moonlight Stage","start":"19:45","end":"17:35","genre":["Death Metal"],"type":"band"},{"id":"p067","band":"Blood Red Throne","day":"Saturday","stage":"Moonlight Stage","start":"18:55","end":"19:45","genre":["Death Metal"],"type":"band"},{"id":"p068","band":"Death To All","day":"Saturday","stage":"Moonlight Stage","start":"20:15","end":"21:15","genre":["Metal"],"type":"band"},{"id":"p069","band":"Javad El Bakali","day":"Saturday","stage":"The Storm Stage","start":"14:00","end":"14:30","genre":["Soul"],"type":"annet"},{"id":"p070","band":"You Know Who","day":"Saturday","stage":"The Storm Stage","start":"16:00","end":"16:30","genre":["Rock"],"type":"band"},{"id":"p071","band":"Bill Bailey","day":"Saturday","stage":"The Storm Stage","start":"18:25","end":"18:55","genre":["Comedy Rock"],"type":"annet"},{"id":"p072","band":"Baphy","day":"Saturday","stage":"The Storm Stage","start":"19:30","end":"20:00","genre":["Rock"],"type":"band"}];
+
+    // Bygger `schedule` (dag -> scene -> oppføringer), `bandGenres` og
+    // `actType` fra den flate lista appen henter fra /api/lineup.
+    function rebuildScheduleFromFlat(flat) {
+      const byDay = {};
+      DAY_ORDER.forEach(d => { byDay[d] = { day: d, date: DAY_DATES[d], stages: {} }; });
+      const newGenres = {};
+      const newActType = {};
+
+      flat.forEach(p => {
+        if (!byDay[p.day]) return; // ukjent dag, ignorer trygt
+        const dayObj = byDay[p.day];
+        if (!dayObj.stages[p.stage]) dayObj.stages[p.stage] = [];
+        dayObj.stages[p.stage].push({ id: p.id, band: p.band, start: p.start, end: p.end });
+        newGenres[p.band] = p.genre || [];
+        if (p.type && p.type !== 'band') newActType[p.band] = p.type;
+      });
+
+      // Sorter hver scene kronologisk på starttid
+      DAY_ORDER.forEach(d => {
+        Object.values(byDay[d].stages).forEach(list => list.sort((a, b) => a.start.localeCompare(b.start)));
+      });
+
+      schedule = DAY_ORDER.map(d => byDay[d]);
+      bandGenres = newGenres;
+      actType = newActType;
+    }
+
+    // Henter programmet fra skyen. Faller tilbake til lokal reservekopi
+    // hvis nettet/funksjonen ikke svarer, så appen aldri viser tom liste.
+    let currentFlatLineup = FALLBACK_LINEUP;
+    async function loadLineup() {
+      try {
+        const res = await fetch('/api/lineup');
+        const data = await res.json();
+        if (Array.isArray(data.lineup) && data.lineup.length > 0) {
+          currentFlatLineup = data.lineup;
+        }
+      } catch (e) {
+        currentFlatLineup = FALLBACK_LINEUP; // skyen nede — bruk reservekopi
+      }
+      rebuildScheduleFromFlat(currentFlatLineup);
+    }
 
     let selectedDay = 0, selectedStage = null, selectedGenre = null;
     const stageMap = { 'Scream Stage': 'scream', 'Vampire Stage': 'vampire', 'Moonlight Stage': 'moonlight', 'The Storm Stage': 'storm' };
@@ -621,23 +633,9 @@
 
     // Klassifisering: oppføringer som IKKE er musikkband.
     // 'event' = fotball/quiz, 'annet' = standup/karaoke/silent disco (Storm Stage).
-    // Kilde: tonsofrock-program bekrefter Storm Stage er stand-up/karaoke/silent disco,
-    // og at "Norge – Frankrike" er en fotballkamp vist på storskjerm.
-    const actType = {
-      'Norge – Frankrike': 'event',
-      // Standup/komikere på Storm Stage (verifisert mot festivalprogram + Last.fm):
-      'Martin Beyer-Olsen': 'annet', // komiker
-      'Cécile Moroni': 'annet',      // komiker
-      'Sarah Løvald': 'annet',      // Sarah Løvald, komiker
-      'Paul Myrehaug': 'annet',      // komiker
-      'Mørk Medisin + Dag Sørås & Espen Abrahamsen': 'annet', // Dag Sørås standup
-      'Nora Svenningsen': 'annet',  // Nora Svenningsen, komiker
-      'Javad El Bakali': 'annet',         // Javad El Bakali, komiker
-      'Bill Bailey': 'annet'         // britisk standup-legende
-      // Følgende Storm Stage-navn ER band (verifisert i offisiell lineup) og
-      // behandles som band automatisk: Turdus Musicus, Jordsjuk, Angel,
-      // Ramonas Tea Party, Host, Koco Franco, You Know Who, Baphy.
-    };
+    // Bygges nå dynamisk fra programmet (se rebuildScheduleFromFlat) i stedet
+    // for en hardkodet liste, slik at admin kan endre type per oppføring.
+    let actType = {};
     // Returnerer 'band' (default), 'event' eller 'annet'
     function getActType(name) { return actType[name] || 'band'; }
 
@@ -1442,6 +1440,15 @@
           <button class="modal-btn danger" id="delSelected" style="margin-top:0;">Slett valgte (0)</button>
         </div>
         <div id="adminResult"></div>
+
+        <div class="lineup-admin-section">
+          <h4>🎵 Rediger program</h4>
+          <input type="text" class="lineup-search" id="lineupSearch" placeholder="Søk etter band…">
+          <div id="lineupEditList"></div>
+          <button class="add-band-btn" id="addNewBandBtn">+ Legg til nytt band</button>
+          <button class="modal-btn secondary" id="resetLineupBtn" style="margin-top:0.6rem;">↺ Tilbakestill program til original</button>
+          <div id="lineupAdminResult"></div>
+        </div>
       `;
       const checks = () => [...content.querySelectorAll('input[type=checkbox]')];
       const delBtn = content.querySelector('#delSelected');
@@ -1471,10 +1478,173 @@
           content.querySelector('#adminResult').innerHTML = `<div class="modal-status warn">Feil: ${e.message}</div>`;
         }
       });
+
+      // ===== Rediger program (band/tid/scene/sjanger/type) =====
+      renderLineupEditList(modal, password, '');
+      content.querySelector('#lineupSearch').addEventListener('input', (e) => {
+        renderLineupEditList(modal, password, e.target.value);
+      });
+      content.querySelector('#addNewBandBtn').addEventListener('click', () => {
+        openLineupEditForm(modal, password, null);
+      });
+      content.querySelector('#resetLineupBtn').addEventListener('click', async () => {
+        if (!confirm('Tilbakestille HELE programmet til original (alle 72 band)? Dine endringer forsvinner.')) return;
+        const resultEl = content.querySelector('#lineupAdminResult');
+        resultEl.innerHTML = '<div class="modal-status info">Tilbakestiller…</div>';
+        try {
+          const res = await fetch('/api/lineup', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, action: 'reset' })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Feil');
+          await loadLineup();
+          renderLineupEditList(modal, password, '');
+          render(); // oppdater synlig program i appen med en gang
+          resultEl.innerHTML = '<div class="modal-status info">✅ Tilbakestilt til original.</div>';
+        } catch (e) {
+          resultEl.innerHTML = `<div class="modal-status warn">Feil: ${e.message}</div>`;
+        }
+      });
+    }
+
+    // Viser den redigerbare bandlisten i admin-panelet (filtrert på søk)
+    function renderLineupEditList(modal, password, filter) {
+      const content = modal.querySelector('.modal-content');
+      const listEl = content.querySelector('#lineupEditList');
+      const f = (filter || '').toLowerCase();
+      const dotClass = { 'Scream Stage': 'dot-scream', 'Vampire Stage': 'dot-vampire', 'Moonlight Stage': 'dot-moonlight', 'The Storm Stage': 'dot-storm' };
+      const shown = currentFlatLineup
+        .filter(p => p.band.toLowerCase().includes(f))
+        .sort((a, b) => DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day) || a.start.localeCompare(b.start));
+
+      listEl.innerHTML = shown.map(p => `
+        <div class="band-row">
+          <span class="stage-dot ${dotClass[p.stage] || 'dot-storm'}"></span>
+          <div class="binfo">
+            <div class="bname">${p.band}</div>
+            <div class="bmeta">${p.day} · ${stageShort[p.stage] || p.stage} · ${p.start}–${p.end}${p.type !== 'band' ? ' · ' + p.type : ''}</div>
+          </div>
+          <button class="row-btn edit" data-id="${p.id}" title="Rediger">✏️</button>
+          <button class="row-btn del" data-id="${p.id}" title="Slett">🗑️</button>
+        </div>
+      `).join('') || '<p style="color:#71717a; font-size:0.85rem; text-align:center; padding:0.7rem 0;">Ingen treff.</p>';
+
+      listEl.querySelectorAll('.row-btn.edit').forEach(b => {
+        b.addEventListener('click', () => openLineupEditForm(modal, password, b.dataset.id));
+      });
+      listEl.querySelectorAll('.row-btn.del').forEach(b => {
+        b.addEventListener('click', async () => {
+          const p = currentFlatLineup.find(x => x.id === b.dataset.id);
+          if (!p) return;
+          if (!confirm(`Slette «${p.band}»? Kan ikke angres.`)) return;
+          const resultEl = content.querySelector('#lineupAdminResult');
+          resultEl.innerHTML = '<div class="modal-status info">Sletter…</div>';
+          try {
+            const res = await fetch('/api/lineup', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ password, action: 'delete', id: p.id })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Feil');
+            await loadLineup();
+            renderLineupEditList(modal, password, content.querySelector('#lineupSearch').value);
+            render();
+            resultEl.innerHTML = `<div class="modal-status info">✅ «${p.band}» slettet.</div>`;
+          } catch (e) {
+            resultEl.innerHTML = `<div class="modal-status warn">Feil: ${e.message}</div>`;
+          }
+        });
+      });
+    }
+
+    // Åpner redigeringsskjema for én oppføring (id=null betyr nytt band)
+    function openLineupEditForm(modal, password, id) {
+      const isNew = !id;
+      const existing = isNew ? null : currentFlatLineup.find(p => p.id === id);
+      const p = existing || { id: null, band: '', day: 'Wednesday', stage: 'Scream Stage', start: '', end: '', genre: [], type: 'band' };
+      const typeLabels = { band: 'Band', annet: 'Standup', event: 'Fotballkamp' };
+
+      const overlay = document.createElement('div');
+      overlay.className = 'lineup-edit-overlay';
+      overlay.innerHTML = `
+        <div class="lineup-edit-modal">
+          <h3>${isNew ? '+ Legg til nytt band' : '✏️ Rediger ' + p.band}</h3>
+          <div class="lf-field">
+            <label>Bandnavn</label>
+            <input type="text" id="lf-band" value="${p.band}" placeholder="f.eks. Iron Maiden">
+          </div>
+          <div class="lf-row">
+            <div class="lf-field">
+              <label>Dag</label>
+              <select id="lf-day">${DAY_ORDER.map(d => `<option value="${d}" ${d===p.day?'selected':''}>${d}</option>`).join('')}</select>
+            </div>
+            <div class="lf-field">
+              <label>Scene</label>
+              <select id="lf-stage">${Object.keys(stageMap).map(s => `<option value="${s}" ${s===p.stage?'selected':''}>${stageShort[s]||s}</option>`).join('')}</select>
+            </div>
+          </div>
+          <div class="lf-row">
+            <div class="lf-field"><label>Starttid</label><input type="time" id="lf-start" value="${p.start}"></div>
+            <div class="lf-field"><label>Sluttid</label><input type="time" id="lf-end" value="${p.end}"></div>
+          </div>
+          <div class="lf-field">
+            <label>Sjanger (kommaseparert)</label>
+            <input type="text" id="lf-genre" value="${(p.genre||[]).join(', ')}" placeholder="f.eks. Heavy Metal, NWOBHM">
+          </div>
+          <div class="lf-field">
+            <label>Type</label>
+            <select id="lf-type">${Object.entries(typeLabels).map(([val, lbl]) => `<option value="${val}" ${val===p.type?'selected':''}>${lbl}</option>`).join('')}</select>
+          </div>
+          <button class="modal-btn primary" id="lfSave">💾 Lagre</button>
+          <button class="modal-btn secondary" id="lfCancel">Avbryt</button>
+          <div id="lfStatus" style="font-size:0.8rem; text-align:center; margin-top:0.5rem; min-height:1rem;"></div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+      overlay.querySelector('#lfCancel').addEventListener('click', () => overlay.remove());
+
+      overlay.querySelector('#lfSave').addEventListener('click', async () => {
+        const statusEl = overlay.querySelector('#lfStatus');
+        const band = overlay.querySelector('#lf-band').value.trim();
+        const start = overlay.querySelector('#lf-start').value;
+        const end = overlay.querySelector('#lf-end').value;
+        if (!band) { statusEl.innerHTML = '<span style="color:#fca5a5;">Bandnavn kan ikke være tomt.</span>'; return; }
+        if (!start || !end) { statusEl.innerHTML = '<span style="color:#fca5a5;">Fyll inn start- og sluttid.</span>'; return; }
+
+        const genre = overlay.querySelector('#lf-genre').value.split(',').map(s => s.trim()).filter(Boolean);
+        const performance = {
+          id: p.id, band,
+          day: overlay.querySelector('#lf-day').value,
+          stage: overlay.querySelector('#lf-stage').value,
+          start, end, genre,
+          type: overlay.querySelector('#lf-type').value
+        };
+
+        statusEl.innerHTML = '<span style="color:#a1a1aa;">Lagrer…</span>';
+        try {
+          const res = await fetch('/api/lineup', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, action: 'upsert', performance })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Feil');
+          await loadLineup();
+          render(); // oppdater synlig program i appen med en gang
+          const modalRef = document.querySelector('.modal-overlay .modal-content #lineupEditList')?.closest('.modal-overlay');
+          if (modalRef) renderLineupEditList(modalRef, password, modalRef.querySelector('#lineupSearch').value);
+          statusEl.innerHTML = '<span style="color:#4ade80;">✅ Lagret!</span>';
+          setTimeout(() => overlay.remove(), 500);
+        } catch (e) {
+          statusEl.innerHTML = `<span style="color:#fca5a5;">Feil: ${e.message}</span>`;
+        }
+      });
     }
 
     // ===== OPPSTART =====
     async function startup() {
+      await loadLineup(); // henter programmet (band/tid/scene) før noe vises
       renderUserBar();
       render();
       const saved = getStoredUser();
