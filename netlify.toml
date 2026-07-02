@@ -37,3 +37,13 @@
   from = "/api/lineup"
   to = "/.netlify/functions/lineup"
   status = 200
+
+[[redirects]]
+  from = "/api/pin-status"
+  to = "/.netlify/functions/favorites"
+  status = 200
+
+[[redirects]]
+  from = "/api/pin-set"
+  to = "/.netlify/functions/favorites"
+  status = 200
