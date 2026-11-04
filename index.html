@@ -404,16 +404,19 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.10.0-beta';
+    const APP_VERSION = 'v2.10.1-beta';
     const APP_BUILD = '2026-07-02';
     const CHANGELOG = [
+      { version: 'v2.10.1-beta', date: '2026-07-02', changes: [
+        '«Logg på» med ukjent navn oppretter ikke lenger stille — tilbyr å opprette (med PIN-felt)',
+        'Ny «🔐 PIN»-knapp i brukerbaren: sett eller endre PIN på en innlogget profil',
+        'Endring av eksisterende PIN krever nåværende PIN'
+      ]},
       { version: 'v2.10.0-beta', date: '2026-07-02', changes: [
         'PIN-kode-autentisering (4 siffer, SHA-256-hash, aldri lagret i klartekst)',
         'Valgfri PIN ved opprettelse av bruker — sikrer at bare du kan logge på',
         'Husket enhet slipper PIN ved neste pålogging',
-        'Feil PIN gir tydelig melding og lar deg prøve igjen',
-        'Admin: se hvem som har PIN (🔒) og nullstill ved behov (🔑)',
-        'PIN overlever lagring av favoritter og tribune-posisjon'
+        'Admin: se hvem som har PIN (🔒) og nullstill ved behov (🔑)'
       ]},
       { version: 'v2.9.0-beta', date: '2026-06-26', changes: [
         'Admin kan redigere band, tid, scene, sjanger og type direkte i appen',
@@ -1071,10 +1074,11 @@
         bar.querySelector('#exitFriend').addEventListener('click', () => { viewingFriend = null; showFavoritesOnly = false; renderUserBar(); render(); });
       } else if (currentUser) {
         const toggleLabel = showFriendsOnCards ? '👥 Venner: PÅ' : '👥 Venner: AV';
-        bar.innerHTML = `<span class="who">☁️ <strong>${currentUser}</strong></span><span style="display:flex;gap:0.4rem;flex-wrap:wrap;"><button id="toggleFriends" style="${showFriendsOnCards ? 'background:#2563eb;color:#fff;' : ''}">${toggleLabel}</button><button id="manageFriends">Venner</button><button id="viewFriend">Se venn</button><button id="switchUser">Bytt</button><button id="logoutBtn">Logg ut</button></span>`;
+        bar.innerHTML = `<span class="who">☁️ <strong>${currentUser}</strong></span><span style="display:flex;gap:0.4rem;flex-wrap:wrap;"><button id="toggleFriends" style="${showFriendsOnCards ? 'background:#2563eb;color:#fff;' : ''}">${toggleLabel}</button><button id="manageFriends">Venner</button><button id="viewFriend">Se venn</button><button id="setPinBtn">🔐 PIN</button><button id="switchUser">Bytt</button><button id="logoutBtn">Logg ut</button></span>`;
         bar.querySelector('#switchUser').addEventListener('click', showLoginModal);
         bar.querySelector('#viewFriend').addEventListener('click', showFriendModal);
         bar.querySelector('#manageFriends').addEventListener('click', showManageFriendsModal);
+        bar.querySelector('#setPinBtn').addEventListener('click', showSetPinModal);
         bar.querySelector('#logoutBtn').addEventListener('click', logout);
         bar.querySelector('#toggleFriends').addEventListener('click', async () => {
           showFriendsOnCards = !showFriendsOnCards;
@@ -1123,6 +1127,22 @@
           // Er navnet PIN-beskyttet? Den huskede enheten slipper å taste PIN på nytt.
           const remembered = (getStoredUser() === name);
           const st = await fetch('/api/pin-status?user=' + encodeURIComponent(name)).then(r => r.json());
+          if (!st.exists) {
+            // Navnet finnes ikke — ikke opprett stille. Tilby å opprette (med PIN-felt).
+            status.innerHTML = `<div class="modal-status warn">«${name}» finnes ikke ennå. Vil du opprette brukeren?</div>`;
+            let createBtn = modal.querySelector('#offerCreate');
+            if (!createBtn) {
+              createBtn = document.createElement('button');
+              createBtn.id = 'offerCreate';
+              createBtn.className = 'modal-btn secondary';
+              createBtn.textContent = `+ Opprett «${name}»`;
+              status.after(createBtn);
+              createBtn.addEventListener('click', () => { modal.remove(); showCreateUserModal(name); });
+            } else {
+              createBtn.textContent = `+ Opprett «${name}»`;
+            }
+            return;
+          }
           if (st.hasPin && !remembered) {
             promptPinThenLogin(modal, name);
             return;
@@ -1137,6 +1157,75 @@
       };
       modal.querySelector('#loginConfirm').addEventListener('click', doLogin);
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } });
+    }
+
+    // Sett eller endre PIN på en INNLOGGET profil (fra brukerbaren).
+    // Åpen profil (ingen PIN): setter PIN direkte. Sikret profil: krever gammel PIN.
+    function showSetPinModal() {
+      if (!currentUser) return;
+      const name = currentUser;
+      const body = `
+        <div id="setPinFields"></div>
+        <div id="setPinStatus"></div>
+        <button class="modal-btn primary" id="setPinConfirm">Lagre PIN</button>
+        <button class="modal-btn ghost" id="setPinCancel">Avbryt</button>
+        <p class="modal-note">PIN sikrer at bare du kan logge på med «${name}» på en ny enhet. Denne enheten husker deg uansett. Glemt PIN senere? Admin kan nullstille den.</p>
+      `;
+      const modal = showModal('🔐 Sett PIN', name, body);
+      const fields = modal.querySelector('#setPinFields');
+      const status = modal.querySelector('#setPinStatus');
+      modal.querySelector('#setPinCancel').addEventListener('click', () => modal.remove());
+
+      // Finn ut om profilen alt har PIN — da trengs gammel PIN for å endre
+      fields.innerHTML = '<div class="modal-status info">Sjekker…</div>';
+      fetch('/api/pin-status?user=' + encodeURIComponent(name)).then(r => r.json()).then(st => {
+        const hasPin = !!st.hasPin;
+        fields.innerHTML = `
+          ${hasPin ? `
+          <div class="form-field">
+            <label>Nåværende PIN</label>
+            <input type="tel" id="oldPin" inputmode="numeric" maxlength="4" placeholder="4 siffer" autocomplete="off" style="letter-spacing:0.4em;text-align:center;font-size:1.2rem;">
+          </div>` : ''}
+          <div class="form-field">
+            <label>${hasPin ? 'Ny PIN' : 'Velg en PIN-kode (4 siffer)'}</label>
+            <input type="tel" id="newPinField" inputmode="numeric" maxlength="4" placeholder="4 siffer" autocomplete="off" style="letter-spacing:0.4em;text-align:center;font-size:1.2rem;">
+          </div>
+        `;
+        const first = fields.querySelector('input');
+        if (first) first.focus();
+      }).catch(() => {
+        fields.innerHTML = '<div class="modal-status warn">Får ikke kontakt med skyen. Prøv igjen.</div>';
+      });
+
+      const doSet = async () => {
+        const newPinEl = modal.querySelector('#newPinField');
+        if (!newPinEl) return;
+        const newPin = newPinEl.value.trim();
+        const oldPinEl = modal.querySelector('#oldPin');
+        const oldPin = oldPinEl ? oldPinEl.value.trim() : null;
+        if (!/^\d{4}$/.test(newPin)) { status.innerHTML = '<div class="modal-status warn">PIN må være 4 siffer.</div>'; return; }
+        if (oldPinEl && !/^\d{4}$/.test(oldPin)) { status.innerHTML = '<div class="modal-status warn">Skriv inn nåværende PIN (4 siffer).</div>'; return; }
+        status.innerHTML = '<div class="modal-status info">Lagrer…</div>';
+        try {
+          const payload = { user: name, action: 'set', pin: newPin };
+          if (oldPin) payload.oldPin = oldPin;
+          const res = await fetch('/api/pin-set', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) {
+            status.innerHTML = `<div class="modal-status warn">${data.error || 'Kunne ikke lagre PIN. Er nåværende PIN riktig?'}</div>`;
+            return;
+          }
+          status.innerHTML = '<div class="modal-status info">✅ PIN lagret. Den kreves ved pålogging på nye enheter.</div>';
+          setTimeout(() => modal.remove(), 1200);
+        } catch (e) {
+          status.innerHTML = `<div class="modal-status warn">Får ikke kontakt med skyen (${e.message}).</div>`;
+        }
+      };
+      modal.querySelector('#setPinConfirm').addEventListener('click', doSet);
+      modal.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSet(); } });
     }
 
     // Ber om PIN på en sikret profil, verifiserer mot skyen, og logger på ved treff.
@@ -1180,11 +1269,11 @@
     }
 
     // Opprett ny bruker — med duplikatsjekk og valgfri PIN-sikring
-    function showCreateUserModal() {
+    function showCreateUserModal(prefillName) {
       const body = `
         <div class="form-field">
           <label>Velg et nytt brukernavn (3–30 tegn)</label>
-          <input type="text" id="newUser" placeholder="f.eks. Kari" maxlength="30" autocomplete="off">
+          <input type="text" id="newUser" placeholder="f.eks. Kari" maxlength="30" autocomplete="off" value="${prefillName ? prefillName.replace(/"/g, '&quot;') : ''}">
         </div>
         <div class="form-field">
           <label>Velg en PIN-kode (4 siffer) – valgfritt, men anbefalt</label>
@@ -1199,7 +1288,7 @@
       const input = modal.querySelector('#newUser');
       const pinInput = modal.querySelector('#newPin');
       const status = modal.querySelector('#createStatus');
-      input.focus();
+      if (prefillName) { pinInput.focus(); } else { input.focus(); }
       modal.querySelector('#backToLogin').addEventListener('click', () => { modal.remove(); showLoginModal(); });
       const doCreate = async () => {
         const name = input.value.trim();
