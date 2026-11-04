@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="no">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Tons of Rock 2026</title>
 
   <!-- iOS fullscreen web app -->
@@ -369,6 +369,14 @@
   <script>
     // ============================================================
     // VERSJON — legg til ny oppføring øverst i CHANGELOG ved hver innsjekking
+    // Escaper tekst som settes inn via innerHTML, så band-/sjanger-/brukernavn
+    // ikke kan injisere HTML. Brukes på alt dynamisk innhold i maler.
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     // ===== TEMA (mørkt / lyst sand) — lagres lokalt =====
     function applyTheme(theme) {
       const light = theme === 'light';
@@ -404,9 +412,16 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.10.1-beta';
-    const APP_BUILD = '2026-07-02';
+    const APP_VERSION = 'v2.11.0-beta';
+    const APP_BUILD = '2026-11-04';
     const CHANGELOG = [
+      { version: 'v2.11.0-beta', date: '2026-11-04', changes: [
+        'Sikkerhet: all tekst (band, sjanger, navn) escapes før visning — ingen HTML-injeksjon',
+        'Tilgjengelighet: knipe-zoom er tillatt igjen (zoom-sperren er fjernet)',
+        'lang="no" for riktig uttale i skjermlesere',
+        'Utlogging tømmer favoritter fra enheten, så de ikke smitter til neste bruker',
+        'Opprydding: PIN-bevaring samlet i én hjelpefunksjon i backend'
+      ]},
       { version: 'v2.10.1-beta', date: '2026-07-02', changes: [
         '«Logg på» med ukjent navn oppretter ikke lenger stille — tilbyr å opprette (med PIN-felt)',
         'Ny «🔐 PIN»-knapp i brukerbaren: sett eller endre PIN på en innlogget profil',
@@ -789,7 +804,7 @@
     }
 
     // Logg ut: glem lagret bruker, tilbake til lokal modus.
-    // Favorittene ligger trygt i skyen under brukernavnet + lokalt.
+    // Favorittene ligger trygt i skyen under brukernavnet.
     function logout() {
       if (!confirm('Logge ut? Favorittene dine er trygt lagret i skyen under «' + currentUser + '».')) return;
       setStoredUser(null);       // appen husker deg ikke lenger
@@ -797,6 +812,12 @@
       myFriends = [];
       viewingFriend = null;
       bandFavCounts = {};
+      // Tøm favorittene fra denne enheten ved utlogging. Ellers ville neste
+      // person som logger inn på samme enhet arvet den forrige brukerens
+      // favoritter (de smittet inn i deres sky-profil ved innlogging).
+      // Den som logget ut mister ingenting — favorittene ligger i skyen.
+      favorites = new Set();
+      saveLocalFavorites(favorites);
       startLocalMode();
       renderUserBar();
       render();
@@ -860,7 +881,7 @@
       try {
         const similar = await fetchSimilarArtists(bandName);
         if (similar.length === 0) {
-          contentEl.innerHTML = `<p style="color:#a1a1aa;">Fant ingen lignende artister for «${bandName}».</p><a href="https://open.spotify.com/search/${encodeURIComponent(bandName)}" target="_blank" rel="noopener" class="track-item" style="border-color:#1db954;background:rgba(29,185,84,0.1);margin-top:0.75rem;"><div class="track-name">🎧 Søk ${bandName} på Spotify</div><div class="track-link" style="color:#1db954;">Åpne →</div></a>`;
+          contentEl.innerHTML = `<p style="color:#a1a1aa;">Fant ingen lignende artister for «${esc(bandName)}».</p><a href="https://open.spotify.com/search/${encodeURIComponent(bandName)}" target="_blank" rel="noopener" class="track-item" style="border-color:#1db954;background:rgba(29,185,84,0.1);margin-top:0.75rem;"><div class="track-name">🎧 Søk ${esc(bandName)} på Spotify</div><div class="track-link" style="color:#1db954;">Åpne →</div></a>`;
           return;
         }
         contentEl.innerHTML = similar.map(a => {
@@ -954,7 +975,7 @@
         if (type !== 'band') {
           const icon = type === 'event' ? '⚽' : '🎤';
           const label = type === 'event' ? 'Storskjerm-event' : 'Standup / scene';
-          return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="band-line">${starBtn}<div class="band-text"><div class="performance-band">${icon} ${p.band}</div><div class="performance-genres">${label}</div><div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div></div></div></div>`;
+          return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="band-line">${starBtn}<div class="band-text"><div class="performance-band">${icon} ${esc(p.band)}</div><div class="performance-genres">${label}</div><div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div></div></div></div>`;
         }
 
         // Venne-rad (Variant A): "Favoritter til:" + LFM/Spotify øverst, navn-piller under
@@ -970,7 +991,7 @@
             const hiddenFriends = counts.friends.length - shown.length;
             pillsHtml = shown.map(f => {
               const firstName = f.split(/\s+/)[0]; // vis fornavn i pillen
-              return `<span class="nametag" data-fullname="${f}"><span class="dot ${colorClass(f)}">${inits[f]}</span>${firstName}</span>`;
+              return `<span class="nametag" data-fullname="${esc(f)}"><span class="dot ${colorClass(f)}">${esc(inits[f])}</span>${esc(firstName)}</span>`;
             }).join('');
             // "+N andre" = skjulte venner + ikke-venner
             const others = (counts.total - counts.friends.length) + hiddenFriends;
@@ -983,7 +1004,7 @@
           friendsBar = `<div class="friends-bar"><span class="fav-label">${favLabel}</span><div class="nametags">${pillsHtml}</div></div>`;
         }
 
-        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="band-line">${starBtn}<div class="band-text"><div class="performance-band">${p.band}</div>${genres ? `<div class="performance-genres">${genres}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div></div><div class="action-row">${btnFamily}</div>${friendsBar}</div></div>`;
+        return `<div class="performance stage-${stageMap[p.stage] || 'storm'}"><div class="performance-info"><div class="band-line">${starBtn}<div class="band-text"><div class="performance-band">${esc(p.band)}</div>${genres ? `<div class="performance-genres">${esc(genres)}</div>` : ''}<div class="performance-meta">${stageTag}<span class="time-badge">${p.start} – ${p.end}</span>${dayTag}</div></div></div><div class="action-row">${btnFamily}</div>${friendsBar}</div></div>`;
       }).join('');
 
       window.currentPerfs = perfs;
@@ -1007,7 +1028,7 @@
       content.querySelectorAll('.nametag').forEach(el => {
         el.addEventListener('click', () => {
           const name = el.getAttribute('data-fullname');
-          if (name) showModal(name, 'Festivalvenn', `<p style="color:#d4d4d8;">${name} har dette bandet som favoritt.</p>`);
+          if (name) showModal(esc(name), 'Festivalvenn', `<p style="color:#d4d4d8;">${esc(name)} har dette bandet som favoritt.</p>`);
         });
       });
 
@@ -1129,7 +1150,7 @@
           const st = await fetch('/api/pin-status?user=' + encodeURIComponent(name)).then(r => r.json());
           if (!st.exists) {
             // Navnet finnes ikke — ikke opprett stille. Tilby å opprette (med PIN-felt).
-            status.innerHTML = `<div class="modal-status warn">«${name}» finnes ikke ennå. Vil du opprette brukeren?</div>`;
+            status.innerHTML = `<div class="modal-status warn">«${esc(name)}» finnes ikke ennå. Vil du opprette brukeren?</div>`;
             let createBtn = modal.querySelector('#offerCreate');
             if (!createBtn) {
               createBtn = document.createElement('button');
@@ -1273,7 +1294,7 @@
       const body = `
         <div class="form-field">
           <label>Velg et nytt brukernavn (3–30 tegn)</label>
-          <input type="text" id="newUser" placeholder="f.eks. Kari" maxlength="30" autocomplete="off" value="${prefillName ? prefillName.replace(/"/g, '&quot;') : ''}">
+          <input type="text" id="newUser" placeholder="f.eks. Kari" maxlength="30" autocomplete="off" value="${prefillName ? esc(prefillName) : ''}">
         </div>
         <div class="form-field">
           <label>Velg en PIN-kode (4 siffer) – valgfritt, men anbefalt</label>
@@ -1299,11 +1320,11 @@
         try {
           const st = await fetch('/api/pin-status?user=' + encodeURIComponent(name)).then(r => r.json());
           if (st.hasPin) {
-            status.innerHTML = `<div class="modal-status warn">«${name}» er allerede sikret med PIN av noen andre. Velg et annet navn — eller gå tilbake og logg på som ${name} hvis det er deg.</div>`;
+            status.innerHTML = `<div class="modal-status warn">«${esc(name)}» er allerede sikret med PIN av noen andre. Velg et annet navn — eller gå tilbake og logg på som ${esc(name)} hvis det er deg.</div>`;
             return;
           }
           if (st.exists) {
-            status.innerHTML = `<div class="modal-status warn">«${name}» finnes allerede (uten PIN). Sett en PIN her for å sikre det som ditt, eller velg et annet navn.</div>`;
+            status.innerHTML = `<div class="modal-status warn">«${esc(name)}» finnes allerede (uten PIN). Sett en PIN her for å sikre det som ditt, eller velg et annet navn.</div>`;
             // La brukeren fortsette uansett — å sette PIN her "claimer" det åpne navnet (first claimer owns the name)
           }
           await loginUser(name);
@@ -1337,7 +1358,7 @@
         showModal('Se en venn', 'Ingen venner ennå', `<p style="color:#a1a1aa;">Du har ikke lagt til noen venner ennå. Trykk «Venner» for å velge fra lista.</p><button class="modal-btn primary" id="goManage">Velg venner</button>`).querySelector('#goManage').addEventListener('click', (e) => { e.target.closest('.modal-overlay').remove(); showManageFriendsModal(); });
         return;
       }
-      const options = myFriends.map(f => `<option value="${f}">${f}</option>`).join('');
+      const options = myFriends.map(f => `<option value="${esc(f)}">${esc(f)}</option>`).join('');
       const body = `
         <div class="form-field">
           <label>Velg fra vennelista di</label>
@@ -1357,7 +1378,7 @@
         try {
           const data = await fetchCloudFavorites(name);
           if (!data.favorites || data.favorites.length === 0) {
-            status.innerHTML = `<div class="modal-status warn">«${name}» har ingen favoritter ennå.</div>`;
+            status.innerHTML = `<div class="modal-status warn">«${esc(name)}» har ingen favoritter ennå.</div>`;
             return;
           }
           viewingFriend = { name, favorites: new Set(data.favorites) };
@@ -1383,8 +1404,8 @@
         }
         const items = others.map(u => `
           <label class="pick-item">
-            <input type="checkbox" value="${u.name}" ${myFriends.includes(u.name) ? 'checked' : ''}>
-            <span class="pname">${u.name}</span>
+            <input type="checkbox" value="${esc(u.name)}" ${myFriends.includes(u.name) ? 'checked' : ''}>
+            <span class="pname">${esc(u.name)}</span>
             <span class="pmeta">${u.count} favoritter</span>
           </label>`).join('');
         content.innerHTML = items + `<button class="modal-btn primary" id="saveFriends">Lagre venner</button>`;
@@ -1426,7 +1447,7 @@
       const stageColor = stageMap[stageName] || 'storm';
       const sub = `${stageShort[stageName] || stageName} · ${perf.start}–${perf.end}`;
       const body = `
-        <div class="concert-desc">${(bandGenres[band] || []).join(' • ') || 'Konsert'}</div>
+        <div class="concert-desc">${esc((bandGenres[band] || []).join(' • ')) || 'Konsert'}</div>
         <div class="arena">
           <div class="arena-stage">🎸 SCENE</div>
           <div class="arena-glow"></div>
@@ -1438,7 +1459,7 @@
         </div>
         <div class="arena-legend">Trykk en sone for å plassere deg (lagres med en gang). Trykk en boble for å se navn. ✨ = søker selskap.</div>
       `;
-      const modal = showModal(band, sub, body);
+      const modal = showModal(esc(band), sub, body);
 
       if (!currentUser || localMode) {
         document.getElementById('zonesWrap').innerHTML = '<p style="color:#fca5a5;text-align:center;font-size:0.85rem;">Logg på for å markere hvor du står.</p>';
@@ -1511,7 +1532,7 @@
             if (mine) bubs += `<span class="bub me ${meetMe ? 'seek' : ''}" data-name="Deg" data-seek="${meetMe}">DU</span>`;
             others.filter(u => u.pos === idx).forEach(u => {
               const init = computeInitials([u.user])[u.user];
-              bubs += `<span class="bub ${colorClass(u.user)} ${u.meet ? 'seek' : ''}" data-name="${u.user}" data-seek="${u.meet}">${init}</span>`;
+              bubs += `<span class="bub ${colorClass(u.user)} ${u.meet ? 'seek' : ''}" data-name="${esc(u.user)}" data-seek="${u.meet}">${esc(init)}</span>`;
             });
             html += `<div class="zone ${mine ? 'mine' : ''}" data-zone="${idx}"><span class="zone-tag">${ZONE_TAGS[idx]}</span>${bubs}</div>`;
           }
@@ -1543,7 +1564,7 @@
             e.stopPropagation();
             const nm = b.dataset.name;
             const seek = b.dataset.seek === 'true';
-            showModal(nm, 'På tribunen', `<p style="color:#d4d4d8;">${nm} står her${seek ? ' og <strong style="color:#fbbf24;">søker selskap ✨</strong>' : '.'}</p>`);
+            showModal(esc(nm), 'På tribunen', `<p style="color:#d4d4d8;">${esc(nm)} står her${seek ? ' og <strong style="color:#fbbf24;">søker selskap ✨</strong>' : '.'}</p>`);
           });
         });
       }
@@ -1602,10 +1623,10 @@
       const fmtDate = (d) => d ? new Date(d).toLocaleDateString('no-NO') : '–';
       const items = users.map(u => `
         <label class="pick-item">
-          <input type="checkbox" value="${u.name}">
-          <span class="pname">${u.name}${u.hasPin ? ' 🔒' : ''}</span>
+          <input type="checkbox" value="${esc(u.name)}">
+          <span class="pname">${esc(u.name)}${u.hasPin ? ' 🔒' : ''}</span>
           <span class="pmeta">${u.count} fav · ${fmtDate(u.updated)}</span>
-          ${u.hasPin ? `<button type="button" class="row-btn reset-pin-btn" data-user="${u.name}" title="Nullstill PIN">🔑</button>` : ''}
+          ${u.hasPin ? `<button type="button" class="row-btn reset-pin-btn" data-user="${esc(u.name)}" title="Nullstill PIN">🔑</button>` : ''}
         </label>`).join('');
       content.innerHTML = `
         <div class="warn-box">⚠️ Sletting kan ikke angres</div>
@@ -1647,7 +1668,7 @@
             if (!res.ok) throw new Error(data.error || 'Feil');
             const refreshed = await fetchAllUsers();
             renderAdminPanel(modal, password, refreshed);
-            modal.querySelector('#adminResult').innerHTML = `<div class="modal-status info">✅ PIN nullstilt for «${uname}».</div>`;
+            modal.querySelector('#adminResult').innerHTML = `<div class="modal-status info">✅ PIN nullstilt for «${esc(uname)}».</div>`;
           } catch (e) {
             resultEl.innerHTML = `<div class="modal-status warn">Feil: ${e.message}</div>`;
           }
@@ -1722,8 +1743,8 @@
         <div class="band-row">
           <span class="stage-dot ${dotClass[p.stage] || 'dot-storm'}"></span>
           <div class="binfo">
-            <div class="bname">${p.band}</div>
-            <div class="bmeta">${p.day} · ${stageShort[p.stage] || p.stage} · ${p.start}–${p.end}${p.type !== 'band' ? ' · ' + p.type : ''}</div>
+            <div class="bname">${esc(p.band)}</div>
+            <div class="bmeta">${p.day} · ${stageShort[p.stage] || p.stage} · ${p.start}–${p.end}${p.type !== 'band' ? ' · ' + esc(p.type) : ''}</div>
           </div>
           <button class="row-btn edit" data-id="${p.id}" title="Rediger">✏️</button>
           <button class="row-btn del" data-id="${p.id}" title="Slett">🗑️</button>
@@ -1750,7 +1771,7 @@
             await loadLineup();
             renderLineupEditList(modal, password, content.querySelector('#lineupSearch').value);
             render();
-            resultEl.innerHTML = `<div class="modal-status info">✅ «${p.band}» slettet.</div>`;
+            resultEl.innerHTML = `<div class="modal-status info">✅ «${esc(p.band)}» slettet.</div>`;
           } catch (e) {
             resultEl.innerHTML = `<div class="modal-status warn">Feil: ${e.message}</div>`;
           }
@@ -1769,10 +1790,10 @@
       overlay.className = 'lineup-edit-overlay';
       overlay.innerHTML = `
         <div class="lineup-edit-modal">
-          <h3>${isNew ? '+ Legg til nytt band' : '✏️ Rediger ' + p.band}</h3>
+          <h3>${isNew ? '+ Legg til nytt band' : '✏️ Rediger ' + esc(p.band)}</h3>
           <div class="lf-field">
             <label>Bandnavn</label>
-            <input type="text" id="lf-band" value="${p.band}" placeholder="f.eks. Iron Maiden">
+            <input type="text" id="lf-band" value="${esc(p.band)}" placeholder="f.eks. Iron Maiden">
           </div>
           <div class="lf-row">
             <div class="lf-field">
@@ -1790,7 +1811,7 @@
           </div>
           <div class="lf-field">
             <label>Sjanger (kommaseparert)</label>
-            <input type="text" id="lf-genre" value="${(p.genre||[]).join(', ')}" placeholder="f.eks. Heavy Metal, NWOBHM">
+            <input type="text" id="lf-genre" value="${esc((p.genre||[]).join(', '))}" placeholder="f.eks. Heavy Metal, NWOBHM">
           </div>
           <div class="lf-field">
             <label>Type</label>
