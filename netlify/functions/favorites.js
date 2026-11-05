@@ -112,7 +112,13 @@ export default async (req) => {
         const data = await strongStore.get(b.key, { type: 'json' });
         const p = data && data.positions && data.positions[band];
         if (p && typeof p.pos === 'number') {
-          positions.push({ user: name, pos: p.pos, meet: !!p.meet });
+          // sub/status mangler på gamle posisjoner → midt i sonen, «er her»
+          positions.push({
+            user: name, pos: p.pos,
+            sub: (typeof p.sub === 'number') ? p.sub : 4,
+            status: p.status === 'planned' ? 'planned' : 'present',
+            meet: !!p.meet
+          });
         }
       }
       return json({ band, positions });
@@ -210,7 +216,11 @@ export default async (req) => {
       } else {
         const pos = parseInt(body.pos, 10);
         if (isNaN(pos) || pos < 0 || pos > 8) return json({ error: 'Ugyldig posisjon' }, 400);
-        positions[band] = { pos, meet: !!body.meet };
+        // sub = finjustering i sonen (0-8, 4 = midten). status = 'present'|'planned'.
+        let sub = parseInt(body.sub, 10);
+        if (isNaN(sub) || sub < 0 || sub > 8) sub = 4;
+        const status = body.status === 'planned' ? 'planned' : 'present';
+        positions[band] = { pos, sub, status, meet: !!body.meet };
       }
       const record = preservePin({
         favorites: existing.favorites || [],

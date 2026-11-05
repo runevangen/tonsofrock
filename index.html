@@ -152,6 +152,25 @@
     .meet-btn { border: 1px solid #52525b; background: transparent; color: #a1a1aa; border-radius: 0.4rem; padding: 0.4rem 0.8rem; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
     .meet-btn.on { background: #fbbf24; color: #000; border-color: #fbbf24; }
     .arena-legend { font-size: 0.72rem; color: #52525b; margin-top: 0.9rem; line-height: 1.5; }
+    /* Finjustering i sonen: bobler forankres etter under-posisjon (sub 0-8) */
+    .bub.anchored { position: absolute; margin: 0; }
+    /* «Planlagt»-boble: stiplet omriss i stedet for fylt */
+    .bub.planned { background: transparent !important; border: 2px dashed #a1a1aa; color: #e4e4e7; box-shadow: none !important; }
+    .bub.planned.me { border-color: #fbbf24; color: #fbbf24; }
+    /* Kompass-velger + status-knapp */
+    .pos-tools { margin-top: 0.85rem; }
+    .pos-tools-label { font-size: 0.72rem; color: #71717a; text-align: center; margin-bottom: 0.4rem; }
+    .compass { display: grid; grid-template-columns: repeat(3, 2.2rem); grid-template-rows: repeat(3, 2.2rem); gap: 0.3rem; justify-content: center; margin-bottom: 0.6rem; }
+    .cbtn { background: #27272a; border: 1px solid #3f3f46; border-radius: 0.4rem; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; color: #d4d4d8; }
+    .cbtn:hover { border-color: #71717a; }
+    .cbtn.sel { background: #fbbf24; color: #000; border-color: #fbbf24; }
+    .status-btn { display: block; width: 100%; border-radius: 0.5rem; padding: 0.6rem; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: 2px solid #fbbf24; background: #fbbf24; color: #000; }
+    .status-btn.planned { background: transparent; color: #fbbf24; border-style: dashed; }
+    body.light .cbtn { background: #fffdf8; border-color: #d6c9ad; color: #44403c; }
+    body.light .cbtn.sel { background: #ea580c; color: #fff; border-color: #ea580c; }
+    body.light .status-btn { border-color: #ea580c; background: #ea580c; color: #fff; }
+    body.light .status-btn.planned { background: transparent; color: #c2410c; }
+    body.light .bub.planned.me { border-color: #ea580c; color: #c2410c; }
     .concert-desc { color: #a1a1aa; font-size: 0.85rem; line-height: 1.5; margin: 0.4rem 0 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid #27272a; }
     /* Admin-lenke i footer */
     .footer .admin-link { font-size: 0.7rem; color: #3f3f46; margin-top: 0.75rem; cursor: pointer; display: inline-block; }
@@ -412,9 +431,14 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.11.2-beta';
+    const APP_VERSION = 'v2.12.0-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.12.0-beta', date: '2026-11-05', changes: [
+        'Tribune: finjuster hvor du står i sonen med et kompass (midten + 8 retninger) — f.eks. «FV, litt til høyre».',
+        'Tribune: status-knapp som veksler mellom «planlagt å gå dit» (stiplet boble) og «jeg er her nå» (fylt boble).',
+        'Flere bobler på samme punkt viftes litt ut så de ikke dekker hverandre.'
+      ]},
       { version: 'v2.11.2-beta', date: '2026-11-05', changes: [
         'Tribune: andres posisjoner oppdateres nå umiddelbart (strong consistency på posisjons-lesingen), ikke opptil 60 sek forsinket.'
       ]},
@@ -1447,6 +1471,14 @@
 
     // ===== KONSERT-DETALJ MED TRIBUNE-KART =====
     const ZONE_TAGS = ['FV','FM','FH','MV','MM','MH','BV','BM','BH'];
+    // Finjustering i sonen: kompass-symboler (sub 0-8, 4 = midten) og hvor
+    // boblen forankres i sonen for hver sub (prosent av sonen).
+    const COMPASS_GLYPHS = ['↖','↑','↗','←','●','→','↙','↓','↘'];
+    const SUBPOS = [
+      { x: 28, y: 26 }, { x: 50, y: 22 }, { x: 72, y: 26 },
+      { x: 24, y: 50 }, { x: 50, y: 50 }, { x: 76, y: 50 },
+      { x: 28, y: 74 }, { x: 50, y: 78 }, { x: 72, y: 74 }
+    ];
     const ZONE_ROWS = [
       { cls: 'foran', name: 'Foran (nærmest scenen)' },
       { cls: 'midten', name: 'Midten' },
@@ -1465,11 +1497,16 @@
           <div class="arena-glow"></div>
           <div id="zonesWrap"><p style="color:#71717a;text-align:center;font-size:0.85rem;">Laster posisjoner…</p></div>
         </div>
+        <div class="pos-tools" id="posTools" style="display:none;">
+          <div class="pos-tools-label">Finjuster i sonen — trykk midten eller en pil</div>
+          <div class="compass" id="compass"></div>
+          <button class="status-btn" id="statusBtn"></button>
+        </div>
         <div class="meet-toggle">
           <div class="mt-text">✨ Møt meg her<small>Synlig kun her — markerer at du søker selskap</small></div>
           <button class="meet-btn" id="meetBtn" disabled>AV</button>
         </div>
-        <div class="arena-legend">Trykk en sone for å plassere deg (lagres med en gang). Trykk en boble for å se navn. ✨ = søker selskap.</div>
+        <div class="arena-legend">Trykk en sone for å plassere deg (lagres med en gang), så finjuster med kompasset. Stiplet boble = planlagt, fylt = er her nå. Trykk en boble for å se navn. ✨ = søker selskap.</div>
       `;
       const modal = showModal(esc(band), sub, body);
 
@@ -1480,8 +1517,10 @@
 
       // Tilstand for denne konserten
       let myPos = null;      // 0-8 eller null
+      let mySub = 4;         // 0-8, finjustering i sonen (4 = midten)
+      let myStatus = 'present'; // 'present' = er her, 'planned' = planlagt å gå dit
       let meetMe = false;
-      let others = [];       // [{user, pos, meet}]
+      let others = [];       // [{user, pos, sub, status, meet}]
 
       // Hent eksisterende posisjoner for bandet. Serveren er fasit for ANDRE;
       // for MEG SELV vinner den lokale bufferen hvis jeg har rørt posisjonen
@@ -1490,14 +1529,19 @@
         const res = await fetch(`/api/positions?band=${encodeURIComponent(band)}`);
         const data = await res.json();
         (data.positions || []).forEach(p => {
-          if (p.user === currentUser) { myPos = p.pos; meetMe = p.meet; }
-          else others.push(p);
+          if (p.user === currentUser) {
+            myPos = p.pos; meetMe = p.meet;
+            mySub = (typeof p.sub === 'number') ? p.sub : 4;
+            myStatus = p.status || 'present';
+          } else others.push(p);
         });
       } catch (e) { /* nett nede — viser tomt kart */ }
       // Overstyr med min egen siste handling denne økten, om den finnes
       if (Object.prototype.hasOwnProperty.call(myPositions, band)) {
-        myPos = myPositions[band].pos;
-        meetMe = myPositions[band].meet;
+        const m = myPositions[band];
+        myPos = m.pos; meetMe = m.meet;
+        mySub = (typeof m.sub === 'number') ? m.sub : 4;
+        myStatus = m.status || 'present';
       }
 
       const meetBtn = modal.querySelector('#meetBtn');
@@ -1514,13 +1558,13 @@
       function savePosition() {
         // Oppdater den lokale bufferen med en gang (optimistisk), så min egen
         // posisjon vises riktig ved ny åpning selv om server-svaret er tregt.
-        myPositions[band] = { pos: myPos, meet: meetMe };
-        const sendPos = myPos, sendMeet = meetMe; // frys verdiene for dette kallet
+        myPositions[band] = { pos: myPos, sub: mySub, status: myStatus, meet: meetMe };
+        const sendPos = myPos, sendSub = mySub, sendStatus = myStatus, sendMeet = meetMe; // frys for dette kallet
         saveChain = saveChain.then(async () => {
           try {
             const res = await fetch('/api/position', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ user: currentUser, band, pos: sendPos, meet: sendMeet })
+              body: JSON.stringify({ user: currentUser, band, pos: sendPos, sub: sendSub, status: sendStatus, meet: sendMeet })
             });
             if (!res.ok) throw new Error('status ' + res.status);
             saveError = false;
@@ -1542,6 +1586,36 @@
         return saveChain;
       }
 
+      // Bygger boblene i én sone, forankret etter under-posisjon (sub).
+      // Flere bobler på samme sub viftes litt ut vannrett så de ikke dekker hverandre.
+      function bubblesForZone(idx) {
+        const specs = [];
+        if (myPos === idx) specs.push({ me: true, name: 'Deg', init: 'DU', cls: 'me', sub: mySub, status: myStatus, meet: meetMe });
+        others.filter(u => u.pos === idx).forEach(u => {
+          specs.push({
+            me: false, name: u.user, init: computeInitials([u.user])[u.user],
+            cls: colorClass(u.user),
+            sub: (typeof u.sub === 'number' && u.sub >= 0 && u.sub <= 8) ? u.sub : 4,
+            status: u.status === 'planned' ? 'planned' : 'present',
+            meet: !!u.meet
+          });
+        });
+        const bySub = {};
+        specs.forEach(s => { (bySub[s.sub] = bySub[s.sub] || []).push(s); });
+        let html = '';
+        Object.keys(bySub).forEach(sub => {
+          const group = bySub[sub];
+          const anchor = SUBPOS[sub] || SUBPOS[4];
+          group.forEach((s, k) => {
+            const dx = (k - (group.length - 1) / 2) * 16; // vifte ut vannrett ved kollisjon
+            const cls = `bub anchored ${s.cls} ${s.status === 'planned' ? 'planned' : ''} ${s.meet ? 'seek' : ''}`;
+            const style = `left:calc(${anchor.x}% + ${dx}px);top:${anchor.y}%;transform:translate(-50%,-50%);`;
+            html += `<span class="${cls}" style="${style}" data-name="${esc(s.name)}" data-seek="${s.meet}" data-planned="${s.status === 'planned'}">${esc(s.init)}</span>`;
+          });
+        });
+        return html;
+      }
+
       function renderZones() {
         const wrap = document.getElementById('zonesWrap');
         if (!wrap) return;
@@ -1551,18 +1625,11 @@
           for (let c = 0; c < 3; c++) {
             const idx = r * 3 + c;
             const mine = myPos === idx;
-            let bubs = '';
-            if (mine) bubs += `<span class="bub me ${meetMe ? 'seek' : ''}" data-name="Deg" data-seek="${meetMe}">DU</span>`;
-            others.filter(u => u.pos === idx).forEach(u => {
-              const init = computeInitials([u.user])[u.user];
-              bubs += `<span class="bub ${colorClass(u.user)} ${u.meet ? 'seek' : ''}" data-name="${esc(u.user)}" data-seek="${u.meet}">${esc(init)}</span>`;
-            });
-            html += `<div class="zone ${mine ? 'mine' : ''}" data-zone="${idx}"><span class="zone-tag">${ZONE_TAGS[idx]}</span>${bubs}</div>`;
+            html += `<div class="zone ${mine ? 'mine' : ''}" data-zone="${idx}"><span class="zone-tag">${ZONE_TAGS[idx]}</span>${bubblesForZone(idx)}</div>`;
           }
           html += `</div>`;
         }
         wrap.innerHTML = html;
-        // Fjern evt. gammel feilmelding ved ny handling
         const oldWarn = document.getElementById('posWarn');
         if (oldWarn && !saveError) oldWarn.remove();
         // Klikk på sone → plasser meg (eller fjern meg om jeg klikker samme sone)
@@ -1570,28 +1637,64 @@
           z.addEventListener('click', () => {
             const idx = parseInt(z.dataset.zone);
             if (myPos === idx) {
-              // Klikk på egen sone = forlat kartet
-              myPos = null;
-              meetMe = false;      // nullstill "møt meg" når du forlater
-              updateMeetBtn();
+              myPos = null; meetMe = false; updateMeetBtn(); // forlat kartet
             } else {
-              myPos = idx;
+              myPos = idx; mySub = 4;  // ny sone: start i midten
             }
             renderZones();
             savePosition();
           });
         });
-        // Klikk på boble → vis navn
+        // Klikk på boble → vis navn (og status/søker-selskap)
         wrap.querySelectorAll('.bub').forEach(b => {
           b.addEventListener('click', (e) => {
             e.stopPropagation();
             const nm = b.dataset.name;
             const seek = b.dataset.seek === 'true';
-            showModal(esc(nm), 'På tribunen', `<p style="color:#d4d4d8;">${esc(nm)} står her${seek ? ' og <strong style="color:#fbbf24;">søker selskap ✨</strong>' : '.'}</p>`);
+            const planned = b.dataset.planned === 'true';
+            const hvor = planned ? 'planlegger å gå hit' : 'står her';
+            showModal(esc(nm), 'På tribunen', `<p style="color:#d4d4d8;">${esc(nm)} ${hvor}${seek ? ' og <strong style="color:#fbbf24;">søker selskap ✨</strong>' : '.'}</p>`);
           });
         });
+        updatePosTools();
+      }
+
+      // Kompass-velger + status-knapp vises kun når jeg står et sted
+      function renderCompass() {
+        const el = document.getElementById('compass');
+        if (!el) return;
+        el.innerHTML = '';
+        COMPASS_GLYPHS.forEach((g, i) => {
+          const b = document.createElement('div');
+          b.className = 'cbtn' + (i === mySub ? ' sel' : '');
+          b.textContent = g;
+          b.addEventListener('click', () => { mySub = i; renderZones(); savePosition(); });
+          el.appendChild(b);
+        });
+      }
+      function updateStatusBtn() {
+        const b = document.getElementById('statusBtn');
+        if (!b) return;
+        b.textContent = myStatus === 'present' ? '✅ Jeg er her nå' : '🕒 Planlagt å gå dit';
+        b.classList.toggle('planned', myStatus === 'planned');
+      }
+      function updatePosTools() {
+        const pt = document.getElementById('posTools');
+        if (!pt) return;
+        if (myPos === null) { pt.style.display = 'none'; return; }
+        pt.style.display = 'block';
+        renderCompass();
+        updateStatusBtn();
       }
       renderZones();
+
+      // Status-knapp: veksler mellom «er her» og «planlagt»
+      modal.querySelector('#statusBtn').addEventListener('click', () => {
+        myStatus = myStatus === 'present' ? 'planned' : 'present';
+        updateStatusBtn();
+        renderZones();
+        savePosition();
+      });
 
       meetBtn.addEventListener('click', () => {
         meetMe = !meetMe;
