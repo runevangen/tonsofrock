@@ -47,3 +47,8 @@
   from = "/api/pin-set"
   to = "/.netlify/functions/favorites"
   status = 200
+
+[[redirects]]
+  from = "/api/mappins"
+  to = "/.netlify/functions/mappins"
+  status = 200
