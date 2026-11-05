@@ -412,9 +412,12 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.11.0-beta';
-    const APP_BUILD = '2026-11-04';
+    const APP_VERSION = 'v2.11.1-beta';
+    const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.11.1-beta', date: '2026-11-05', changes: [
+        'Fikset: egen tribune-posisjon kunne henge igjen på gammel verdi hvis du lukket og gikk raskt tilbake (tregt server-svar). Din siste handling vinner nå alltid.'
+      ]},
       { version: 'v2.11.0-beta', date: '2026-11-04', changes: [
         'Sikkerhet: all tekst (band, sjanger, navn) escapes før visning — ingen HTML-injeksjon',
         'Tilgjengelighet: knipe-zoom er tillatt igjen (zoom-sperren er fjernet)',
@@ -676,6 +679,12 @@
     let allUsers = [];             // alle registrerte brukere [{name,count,updated}]
     let showFriendsOnCards = true; // av/på: vis "Favoritter til:" på kort (default PÅ)
     let bandFavCounts = {};        // { bandnavn: { total, friends:[navn] } }
+    // Optimistisk buffer for MIN egen tribune-posisjon per band, denne økten.
+    // Skrives med en gang jeg klikker, og brukes som fasit for meg selv når
+    // konsert-modalen åpnes på nytt — slik at min siste handling aldri
+    // overskrives av et tregt/utdatert server-svar (Blobs er eventually
+    // consistent). Verdi: { pos: 0-8 | null, meet: bool }. Fravær = urørt.
+    const myPositions = {};
     const AUTO_VENNER_UNDER = 15;  // under denne grensen er alle automatisk venner
     let autoFriendMode = false;    // true når < AUTO_VENNER_UNDER brukere
     let capWarningShown = false;   // har vi vist 15+-advarselen?
@@ -1471,7 +1480,9 @@
       let meetMe = false;
       let others = [];       // [{user, pos, meet}]
 
-      // Hent eksisterende posisjoner for bandet
+      // Hent eksisterende posisjoner for bandet. Serveren er fasit for ANDRE;
+      // for MEG SELV vinner den lokale bufferen hvis jeg har rørt posisjonen
+      // i denne økten (ellers kan et tregt server-svar vise min gamle plass).
       try {
         const res = await fetch(`/api/positions?band=${encodeURIComponent(band)}`);
         const data = await res.json();
@@ -1480,6 +1491,11 @@
           else others.push(p);
         });
       } catch (e) { /* nett nede — viser tomt kart */ }
+      // Overstyr med min egen siste handling denne økten, om den finnes
+      if (Object.prototype.hasOwnProperty.call(myPositions, band)) {
+        myPos = myPositions[band].pos;
+        meetMe = myPositions[band].meet;
+      }
 
       const meetBtn = modal.querySelector('#meetBtn');
       meetBtn.disabled = false;
@@ -1493,11 +1509,15 @@
       let saveChain = Promise.resolve();
       let saveError = false;
       function savePosition() {
+        // Oppdater den lokale bufferen med en gang (optimistisk), så min egen
+        // posisjon vises riktig ved ny åpning selv om server-svaret er tregt.
+        myPositions[band] = { pos: myPos, meet: meetMe };
+        const sendPos = myPos, sendMeet = meetMe; // frys verdiene for dette kallet
         saveChain = saveChain.then(async () => {
           try {
             const res = await fetch('/api/position', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ user: currentUser, band, pos: myPos, meet: meetMe })
+              body: JSON.stringify({ user: currentUser, band, pos: sendPos, meet: sendMeet })
             });
             if (!res.ok) throw new Error('status ' + res.status);
             saveError = false;
