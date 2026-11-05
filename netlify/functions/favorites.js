@@ -98,14 +98,18 @@ export default async (req) => {
     }
 
     // ALLE POSISJONER FOR ET BAND (tribune-kart)
+    // Leses med STRONG consistency, så en bruker ser andres nyeste posisjon
+    // med en gang (ikke opptil 60 sek forsinket som ved eventual consistency).
+    // Kun denne lesingen er strong — resten av appen bruker rask eventual.
     if (req.method === 'GET' && url.pathname.endsWith('/positions')) {
       const band = url.searchParams.get('band');
       if (!band) return json({ error: 'Mangler band' }, 400);
-      const { blobs } = await store.list();
+      const strongStore = getStore({ name: 'favorites', consistency: 'strong' });
+      const { blobs } = await strongStore.list();
       const positions = [];
       for (const b of blobs) {
         const name = b.key.replace(/^user:/, '');
-        const data = await store.get(b.key, { type: 'json' });
+        const data = await strongStore.get(b.key, { type: 'json' });
         const p = data && data.positions && data.positions[band];
         if (p && typeof p.pos === 'number') {
           positions.push({ user: name, pos: p.pos, meet: !!p.meet });
