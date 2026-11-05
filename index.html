@@ -188,8 +188,8 @@
     body.light .dot.planned { border-color: #9c8861; }
     /* Fullskjerm sonevisning */
     .zoneview-overlay { position: fixed; inset: 0; z-index: 300; background: #000; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
-    .zv-top { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.9rem; border-bottom: 1px solid #27272a; flex-shrink: 0; }
-    .zv-back { font-size: 1.4rem; color: #a1a1aa; cursor: pointer; background: none; border: none; line-height: 1; }
+    .zv-top { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.9rem; padding-top: calc(0.7rem + env(safe-area-inset-top)); border-bottom: 1px solid #27272a; flex-shrink: 0; }
+    .zv-back { font-size: 1.5rem; color: #a1a1aa; cursor: pointer; background: none; border: none; line-height: 1; padding: 0.3rem 0.5rem; margin: -0.3rem 0; }
     .zv-top h3 { font-size: 1.05rem; font-weight: 900; }
     .zv-top .zv-name { font-size: 0.72rem; color: #71717a; }
     .zv-top .zv-crumb { font-size: 0.72rem; color: #71717a; font-weight: 700; margin-bottom: 0.1rem; }
@@ -515,9 +515,12 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.14.0-beta';
+    const APP_VERSION = 'v2.14.1-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.14.1-beta', date: '2026-11-05', changes: [
+        'Kart: fikset at man kunne bli «fast» — tilbake-pilen lå under hakket/statuslinjen på toppen. Lagt til safe-area-margin, en tydelig «Lukk kart»-knapp i bunnen, og Esc lukker også.'
+      ]},
       { version: 'v2.14.0-beta', date: '2026-11-05', changes: [
         'NYTT: Ekebergsletta-kart (📍 i toppen) — eget skjematisk kart med «jeg er her» via GPS.',
         'Nåler for scener, mat, møtepunkt, toalett og inngang — admin plasserer dem (lagres i skyen, alle ser de samme).',
@@ -2122,6 +2125,7 @@
           <div class="map-edit-bar" id="mapEditBar">
             <button class="map-edit-link" id="editToggle">✏️ Rediger kart (admin)</button>
           </div>
+          <button class="zv-leave" id="mapClose" style="margin-top:0.8rem;">← Lukk kart</button>
         </div>`;
       document.body.appendChild(overlay);
       const wrap = overlay.querySelector('#mapwrap');
@@ -2279,7 +2283,11 @@
       }
 
       overlay.querySelector('#editToggle').addEventListener('click', openAdminPrompt);
-      overlay.querySelector('.zv-back').addEventListener('click', () => overlay.remove());
+      const closeMap = () => { document.removeEventListener('keydown', onEsc); overlay.remove(); };
+      const onEsc = (e) => { if (e.key === 'Escape') closeMap(); };
+      document.addEventListener('keydown', onEsc);
+      overlay.querySelector('.zv-back').addEventListener('click', closeMap);
+      overlay.querySelector('#mapClose').addEventListener('click', closeMap);
       renderPins();
     }
 
