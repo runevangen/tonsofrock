@@ -192,6 +192,8 @@
     .zv-back { font-size: 1.4rem; color: #a1a1aa; cursor: pointer; background: none; border: none; line-height: 1; }
     .zv-top h3 { font-size: 1.05rem; font-weight: 900; }
     .zv-top .zv-name { font-size: 0.72rem; color: #71717a; }
+    .zv-top .zv-crumb { font-size: 0.72rem; color: #71717a; font-weight: 700; margin-bottom: 0.1rem; }
+    body.light .zv-top .zv-crumb { color: #9c8861; }
     .zv-body { flex: 1; display: flex; flex-direction: column; padding: 0.6rem 0.8rem 0.5rem; min-height: 0; }
     .zv-toward { text-align: center; font-size: 0.64rem; color: #52525b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
     .finegrid { flex: 1; display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); gap: 0.45rem; min-height: 0; }
@@ -487,9 +489,12 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.13.1-beta';
+    const APP_VERSION = 'v2.13.2-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.13.2-beta', date: '2026-11-05', changes: [
+        'Tribune: når du åpner en sone i fullskjerm vises nå bandnavn + fullt sonenavn (f.eks. «Iron Maiden › FV · Foran venstre»), så det er tydelig at du har gått et hakk inn.'
+      ]},
       { version: 'v2.13.1-beta', date: '2026-11-05', changes: [
         'Minikart: byttet overlappende initial-bobler mot små prikker + tydelig teller — rolig oversikt selv når mange står samlet. Din egen i gull, stiplet = planlagt, ✨ = søker selskap. Navn og nøyaktig plass i fullskjerm.'
       ]},
@@ -1697,7 +1702,7 @@
         overlay.innerHTML = `
           <div class="zv-top">
             <button class="zv-back" aria-label="Tilbake">←</button>
-            <div><h3>${ZONE_TAGS[idx]}</h3><div class="zv-name">${ZONE_NAMES[idx]}</div></div>
+            <div><div class="zv-crumb">${esc(band)} ›</div><h3>${ZONE_TAGS[idx]} · ${ZONE_NAMES[idx]}</h3></div>
           </div>
           <div class="zv-body">
             <div class="zv-toward">↑ mot scenen</div>
