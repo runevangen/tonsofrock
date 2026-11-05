@@ -229,6 +229,31 @@
     body.light .pbub.me { background: #ea580c; color: #fff; box-shadow: 0 0 0 2px #fffdf8, 0 0 0 3.5px #ea580c; }
     body.light .person.me-p .pname { color: #c2410c; }
     body.light .zv-leave { border-color: #d6c9ad; color: #9c8861; }
+    /* Ekeberg-kart (fullskjerm) */
+    .map-overlay { position: fixed; inset: 0; z-index: 300; background: #000; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+    .map-overlay .zv-top { flex-shrink: 0; }
+    .map-body { flex: 1; display: flex; flex-direction: column; padding: 0.6rem 0.8rem 0.5rem; min-height: 0; overflow-y: auto; }
+    .map-note { font-size: 0.68rem; color: #71717a; text-align: center; margin-bottom: 0.4rem; line-height: 1.4; }
+    .mapwrap { position: relative; border-radius: 0.6rem; overflow: hidden; border: 1px solid #27272a; flex-shrink: 0; }
+    .mapwrap svg { display: block; width: 100%; height: auto; background: #0c120c; }
+    .map-north { position: absolute; top: 8px; right: 10px; background: rgba(0,0,0,0.6); border-radius: 0.4rem; padding: 0.15rem 0.4rem; font-size: 0.68rem; font-weight: 800; color: #fbbf24; }
+    .pin { position: absolute; transform: translate(-50%,-100%); font-size: 1.1rem; cursor: pointer; text-align: center; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8)); }
+    .pin .pin-label { display: block; font-size: 0.56rem; font-weight: 700; color: #fff; background: rgba(0,0,0,0.55); border-radius: 0.3rem; padding: 0 0.2rem; margin-top: 1px; white-space: nowrap; max-width: 6rem; overflow: hidden; text-overflow: ellipsis; transform: translateX(-50%); margin-left: 50%; }
+    .pin.editing { outline: 2px dashed #fbbf24; border-radius: 0.3rem; }
+    .you-dot-wrap { position: absolute; transform: translate(-50%,-50%); pointer-events: none; }
+    .you-dot-wrap .pulse { position: absolute; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: rgba(251,191,36,0.22); left: 50%; top: 50%; transform: translate(-50%,-50%); animation: youpulse 2s ease-out infinite; }
+    .you-dot-wrap .core { position: relative; width: 0.9rem; height: 0.9rem; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 0 2px #000; }
+    @keyframes youpulse { 0% { opacity: 0.6; transform: translate(-50%,-50%) scale(0.5); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.3); } }
+    .map-controls { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-shrink: 0; }
+    .map-controls .status-btn, .map-controls .meet-btn { flex: 1; width: auto; }
+    .map-legend { margin-top: 0.7rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.8rem; font-size: 0.74rem; color: #d4d4d8; flex-shrink: 0; }
+    .map-legend .it { display: flex; align-items: center; gap: 0.4rem; }
+    .map-edit-bar { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid #27272a; flex-shrink: 0; }
+    .map-edit-bar .map-edit-hint { font-size: 0.72rem; color: #fbbf24; text-align: center; margin-bottom: 0.4rem; }
+    .map-edit-link { background: none; border: none; color: #71717a; font-size: 0.74rem; text-decoration: underline; cursor: pointer; display: block; margin: 0.5rem auto 0; }
+    body.light .map-overlay { background: #f5f0e6; }
+    body.light .map-body .map-note, body.light .map-edit-link { color: #9c8861; }
+    body.light .map-legend { color: #44403c; }
     .concert-desc { color: #a1a1aa; font-size: 0.85rem; line-height: 1.5; margin: 0.4rem 0 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid #27272a; }
     /* Admin-lenke i footer */
     .footer .admin-link { font-size: 0.7rem; color: #3f3f46; margin-top: 0.75rem; cursor: pointer; display: inline-block; }
@@ -420,6 +445,7 @@
         <button class="s2" data-size="2" title="Stor tekst">A</button>
         <button class="s3" data-size="3" title="Størst tekst">A</button>
       </div>
+      <button class="theme-toggle" id="mapBtn" title="Ekebergsletta-kart">📍</button>
       <button class="theme-toggle" id="themeToggle" title="Bytt mellom mørkt og lyst tema">🌙</button>
     </div>
   </div>
@@ -489,9 +515,14 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.13.2-beta';
+    const APP_VERSION = 'v2.14.0-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.14.0-beta', date: '2026-11-05', changes: [
+        'NYTT: Ekebergsletta-kart (📍 i toppen) — eget skjematisk kart med «jeg er her» via GPS.',
+        'Nåler for scener, mat, møtepunkt, toalett og inngang — admin plasserer dem (lagres i skyen, alle ser de samme).',
+        'Merk: GPS er omtrentlig, og kartet er vårt eget (ikke det offisielle). Posisjoner settes presist fra festivalkartet.'
+      ]},
       { version: 'v2.13.2-beta', date: '2026-11-05', changes: [
         'Tribune: når du åpner en sone i fullskjerm vises nå bandnavn + fullt sonenavn (f.eks. «Iron Maiden › FV · Foran venstre»), så det er tydelig at du har gått et hakk inn.'
       ]},
@@ -1150,6 +1181,7 @@
     versionEl.addEventListener('click', showChangelog);
     document.getElementById('adminLink').addEventListener('click', showAdminModal);
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    document.getElementById('mapBtn').addEventListener('click', openMapView);
     document.querySelectorAll('#sizeControl button').forEach(b => {
       b.addEventListener('click', () => setSize(parseInt(b.dataset.size)));
     });
@@ -2043,6 +2075,212 @@
           statusEl.innerHTML = `<span style="color:#fca5a5;">Feil: ${e.message}</span>`;
         }
       });
+    }
+
+    // ===== EKEBERGSLETTA-KART (eget skjematisk kart + GPS «jeg er her») =====
+    // Kalibrerings-boks: ekte bredde/lengdegrad for kartets kanter. Juster
+    // disse hvis «jeg er her» havner feil på sletta (senter ~59.8936, 10.7808).
+    const MAP_BOX = { latMin: 59.89157, latMax: 59.89563, lngMin: 10.77676, lngMax: 10.78484 };
+    const PIN_ICON = { stage: '🎸', food: '🍔', meet: '📍', toilet: '🚻', entrance: '🚪', other: '📌' };
+    const PIN_TYPES = [['stage','Scene'],['food','Mat'],['meet','Møtepunkt'],['toilet','Toalett'],['entrance','Inngang'],['other','Annet']];
+    // Skjematisk gresslette (vårt eget — ikke det offisielle kartet).
+    const MAP_SVG = `<svg viewBox="0 0 400 520">
+        <rect x="0" y="0" width="400" height="520" fill="#0c120c"/>
+        <path d="M30,40 Q200,10 370,50 Q390,260 360,480 Q200,510 40,470 Q10,250 30,40 Z" fill="#14301a" stroke="#1f4a2a" stroke-width="2"/>
+        <path d="M40,250 Q200,230 360,260" stroke="#2a4a33" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <path d="M200,60 Q210,260 200,470" stroke="#2a4a33" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <g fill="#1c3b24"><circle cx="60" cy="90" r="7"/><circle cx="80" cy="110" r="5"/><circle cx="340" cy="100" r="7"/><circle cx="355" cy="130" r="5"/><circle cx="55" cy="430" r="6"/><circle cx="350" cy="440" r="7"/></g>
+      </svg>`;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+    async function openMapView() {
+      let pins = [];
+      try { pins = (await fetch('/api/mappins').then(r => r.json())).pins || []; } catch (e) { /* vis tomt */ }
+
+      let editMode = false, adminPw = '', moveTargetId = null;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'map-overlay';
+      if (document.body.classList.contains('light')) overlay.classList.add('light');
+      overlay.innerHTML = `
+        <div class="zv-top">
+          <button class="zv-back" aria-label="Lukk">←</button>
+          <div><div class="zv-crumb">Tons of Rock ›</div><h3>Ekebergsletta-kart</h3></div>
+        </div>
+        <div class="map-body">
+          <div class="map-note">Vårt eget skjematiske kart (ikke det offisielle) · ikke i målestokk · «jeg er her» er omtrentlig</div>
+          <div class="mapwrap" id="mapwrap">${MAP_SVG}<div class="map-north">N ↑</div></div>
+          <div class="map-controls">
+            <button class="status-btn" id="hereBtn">📍 Jeg er her</button>
+          </div>
+          <div class="status" id="mapStatus" style="font-size:0.74rem;color:#71717a;text-align:center;margin-top:0.5rem;min-height:1rem;"></div>
+          <div class="map-legend">
+            <div class="it">🎸 Scene</div><div class="it">🍔 Mat</div>
+            <div class="it">📍 Møtepunkt</div><div class="it">🚻 Toalett</div>
+            <div class="it">🚪 Inngang</div><div class="it"><span style="color:#fbbf24;">●</span> Deg (GPS)</div>
+          </div>
+          <div class="map-edit-bar" id="mapEditBar">
+            <button class="map-edit-link" id="editToggle">✏️ Rediger kart (admin)</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const wrap = overlay.querySelector('#mapwrap');
+      const statusEl = overlay.querySelector('#mapStatus');
+
+      function renderPins() {
+        wrap.querySelectorAll('.pin').forEach(p => p.remove());
+        pins.forEach(p => {
+          const el = document.createElement('div');
+          el.className = 'pin' + (moveTargetId === p.id ? ' editing' : '');
+          el.style.left = p.x + '%';
+          el.style.top = p.y + '%';
+          el.innerHTML = `${PIN_ICON[p.type] || '📌'}<span class="pin-label">${esc(p.name)}</span>`;
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (editMode) editPin(p);
+            else showModal(esc(p.name), ({stage:'Scene',food:'Mat',meet:'Møtepunkt',toilet:'Toalett',entrance:'Inngang',other:'Sted'})[p.type] || 'Sted', `<p style="color:#d4d4d8;">${PIN_ICON[p.type] || '📌'} ${esc(p.name)}</p>`);
+          });
+          wrap.appendChild(el);
+        });
+      }
+
+      // GPS «jeg er her»
+      overlay.querySelector('#hereBtn').addEventListener('click', () => {
+        if (!navigator.geolocation) { statusEl.textContent = 'Enheten støtter ikke GPS.'; return; }
+        statusEl.textContent = '📡 Henter posisjon…';
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const { latitude, longitude, accuracy } = pos.coords;
+          const inside = latitude >= MAP_BOX.latMin - 0.002 && latitude <= MAP_BOX.latMax + 0.002 && longitude >= MAP_BOX.lngMin - 0.003 && longitude <= MAP_BOX.lngMax + 0.003;
+          const x = clamp(((longitude - MAP_BOX.lngMin) / (MAP_BOX.lngMax - MAP_BOX.lngMin)) * 100, 0, 100);
+          const y = clamp(((MAP_BOX.latMax - latitude) / (MAP_BOX.latMax - MAP_BOX.latMin)) * 100, 0, 100);
+          wrap.querySelectorAll('.you-dot-wrap').forEach(d => d.remove());
+          const you = document.createElement('div');
+          you.className = 'you-dot-wrap';
+          you.style.left = x + '%'; you.style.top = y + '%';
+          you.innerHTML = '<div class="pulse"></div><div class="core"></div>';
+          wrap.appendChild(you);
+          statusEl.innerHTML = inside
+            ? `📍 Omtrentlig posisjon vist (GPS ±${Math.round(accuracy)} m).`
+            : `📍 Du ser ikke ut til å være på Ekebergsletta nå — prikken viser nærmeste kant. (GPS ±${Math.round(accuracy)} m)`;
+        }, (err) => {
+          statusEl.textContent = 'Fikk ikke posisjon: ' + (err.code === 1 ? 'du må tillate posisjon i nettleseren.' : err.message);
+        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 });
+      });
+
+      // Klikk på kartet i redigeringsmodus → legg til nål (eller flytt valgt)
+      wrap.addEventListener('click', (e) => {
+        if (!editMode) return;
+        const rect = wrap.getBoundingClientRect();
+        const xPct = clamp(((e.clientX - rect.left) / rect.width) * 100, 0, 100);
+        const yPct = clamp(((e.clientY - rect.top) / rect.height) * 100, 0, 100);
+        if (moveTargetId) {
+          const p = pins.find(x => x.id === moveTargetId);
+          moveTargetId = null;
+          if (p) savePin({ ...p, x: xPct, y: yPct });
+        } else {
+          addPinAt(xPct, yPct);
+        }
+      });
+
+      async function savePin(pin) {
+        statusEl.textContent = 'Lagrer…';
+        try {
+          const res = await fetch('/api/mappins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPw, action: 'upsert', pin }) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Feil');
+          pins = data.pins; renderPins(); statusEl.textContent = '✅ Lagret.';
+        } catch (e) { statusEl.innerHTML = `<span style="color:#fca5a5;">${e.message}</span>`; }
+      }
+      async function deletePin(id) {
+        try {
+          const res = await fetch('/api/mappins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPw, action: 'delete', id }) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Feil');
+          pins = data.pins; renderPins(); statusEl.textContent = '🗑️ Slettet.';
+        } catch (e) { statusEl.innerHTML = `<span style="color:#fca5a5;">${e.message}</span>`; }
+      }
+
+      function pinForm(title, initial, onSave, onDelete, onMove) {
+        const typeOpts = PIN_TYPES.map(([v, l]) => `<option value="${v}" ${v === initial.type ? 'selected' : ''}>${l}</option>`).join('');
+        const m = showModal(title, 'Kart-nål', `
+          <div class="form-field"><label>Navn</label><input type="text" id="pinName" maxlength="60" value="${esc(initial.name || '')}" placeholder="f.eks. Mat – burger"></div>
+          <div class="form-field"><label>Type</label><select id="pinType">${typeOpts}</select></div>
+          <div id="pinFormStatus"></div>
+          <button class="modal-btn primary" id="pinSave">💾 Lagre</button>
+          ${onMove ? '<button class="modal-btn secondary" id="pinMove">📍 Flytt (trykk ny plass på kartet)</button>' : ''}
+          ${onDelete ? '<button class="modal-btn danger" id="pinDel">🗑️ Slett</button>' : ''}
+          <button class="modal-btn ghost" id="pinCancel">Avbryt</button>
+        `);
+        m.querySelector('#pinCancel').addEventListener('click', () => m.remove());
+        m.querySelector('#pinSave').addEventListener('click', () => {
+          const name = m.querySelector('#pinName').value.trim();
+          if (!name) { m.querySelector('#pinFormStatus').innerHTML = '<div class="modal-status warn">Navn kan ikke være tomt.</div>'; return; }
+          onSave(name, m.querySelector('#pinType').value); m.remove();
+        });
+        if (onMove) m.querySelector('#pinMove').addEventListener('click', () => { onMove(); m.remove(); });
+        if (onDelete) m.querySelector('#pinDel').addEventListener('click', () => { if (confirm('Slette denne nålen?')) { onDelete(); m.remove(); } });
+      }
+
+      function addPinAt(x, y) {
+        pinForm('+ Ny nål', { name: '', type: 'food' }, (name, type) => savePin({ name, type, x, y }));
+      }
+      function editPin(p) {
+        pinForm('✏️ ' + p.name, p, (name, type) => savePin({ ...p, name, type }), () => deletePin(p.id), () => {
+          moveTargetId = p.id; renderPins();
+          statusEl.innerHTML = '👆 Trykk den nye plassen på kartet for å flytte «' + esc(p.name) + '».';
+        });
+      }
+
+      // Spør om admin-passord, slå på redigeringsmodus ved riktig passord.
+      function openAdminPrompt() {
+        const m = showModal('🔒 Admin', 'Rediger kart', `
+          <div class="form-field"><label>Admin-passord</label><input type="password" id="mapPw" placeholder="Passord"></div>
+          <div id="mapPwStatus"></div>
+          <button class="modal-btn primary" id="mapPwOk">Lås opp redigering</button>
+          <button class="modal-btn ghost" id="mapPwCancel">Avbryt</button>`);
+        m.querySelector('#mapPwCancel').addEventListener('click', () => m.remove());
+        const submit = async () => {
+          const pw = m.querySelector('#mapPw').value;
+          m.querySelector('#mapPwStatus').innerHTML = '<div class="modal-status info">Sjekker…</div>';
+          try {
+            // Ukjent action 'noop': server svarer 403 ved feil passord, 400 ved riktig.
+            const res = await fetch('/api/mappins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pw, action: 'noop' }) });
+            if (res.status === 403) { m.querySelector('#mapPwStatus').innerHTML = '<div class="modal-status warn">Feil passord.</div>'; return; }
+            adminPw = pw; editMode = true; m.remove(); renderPins(); refreshEditBar();
+          } catch (e) { m.querySelector('#mapPwStatus').innerHTML = `<div class="modal-status warn">${e.message}</div>`; }
+        };
+        m.querySelector('#mapPwOk').addEventListener('click', submit);
+        m.querySelector('#mapPw').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+      }
+
+      async function resetPins() {
+        if (!confirm('Tilbakestille alle nåler til standard-plassholderne?')) return;
+        try {
+          const res = await fetch('/api/mappins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: adminPw, action: 'reset' }) });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Feil');
+          pins = data.pins; renderPins(); statusEl.textContent = '↺ Tilbakestilt.';
+        } catch (e) { statusEl.innerHTML = `<span style="color:#fca5a5;">${e.message}</span>`; }
+      }
+
+      // Bygger edit-baren på nytt og kobler knappene (robust ved modus-bytte).
+      function refreshEditBar() {
+        const bar = overlay.querySelector('#mapEditBar');
+        if (editMode) {
+          bar.innerHTML = `<div class="map-edit-hint">✏️ Redigeringsmodus: trykk kartet for å legge til, en nål for å endre/flytte/slette.</div>
+            <button class="map-edit-link" id="editDone">Ferdig å redigere</button>
+            <button class="map-edit-link" id="resetPinsBtn" style="color:#fca5a5;">↺ Tilbakestill nåler til standard</button>`;
+          bar.querySelector('#editDone').addEventListener('click', () => { editMode = false; moveTargetId = null; renderPins(); refreshEditBar(); });
+          bar.querySelector('#resetPinsBtn').addEventListener('click', resetPins);
+        } else {
+          bar.innerHTML = '<button class="map-edit-link" id="editToggle">✏️ Rediger kart (admin)</button>';
+          bar.querySelector('#editToggle').addEventListener('click', openAdminPrompt);
+        }
+      }
+
+      overlay.querySelector('#editToggle').addEventListener('click', openAdminPrompt);
+      overlay.querySelector('.zv-back').addEventListener('click', () => overlay.remove());
+      renderPins();
     }
 
     // ===== OPPSTART =====
