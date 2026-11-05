@@ -50,6 +50,17 @@ async function pinMatches(pin, record) {
   return got === record.pinHash;
 }
 
+// Kopierer PIN-feltene fra den eksisterende profilen over på en ny record.
+// MÅ kalles på hver skriveoperasjon som bygger en ny record — ellers slettes
+// PIN-en til brukeren. Samlet her så det ikke kan glemmes ett sted.
+function preservePin(record, existing) {
+  if (existing && existing.pinHash) {
+    record.pinHash = existing.pinHash;
+    record.pinSalt = existing.pinSalt;
+  }
+  return record;
+}
+
 const CORS = {
   'Content-Type': 'application/json',
   'Access-Control-Allow-Origin': '*',
@@ -197,14 +208,12 @@ export default async (req) => {
         if (isNaN(pos) || pos < 0 || pos > 8) return json({ error: 'Ugyldig posisjon' }, 400);
         positions[band] = { pos, meet: !!body.meet };
       }
-      const record = {
+      const record = preservePin({
         favorites: existing.favorites || [],
         friends: existing.friends || [],
         positions,
         updated: new Date().toISOString()
-      };
-      // VIKTIG: bevar PIN-feltene — ellers slettes PIN hver gang noen flytter seg på kartet
-      if (existing.pinHash) { record.pinHash = existing.pinHash; record.pinSalt = existing.pinSalt; }
+      }, existing);
       await store.setJSON('user:' + user, record);
       return json({ ok: true });
     }
@@ -235,13 +244,11 @@ export default async (req) => {
       const friends = Array.isArray(body.friends)
         ? body.friends.map(cleanUser).filter(Boolean).slice(0, 100)
         : (existing.friends || []);
-      const record = {
+      const record = preservePin({
         favorites, friends,
         positions: existing.positions || {},
         updated: new Date().toISOString()
-      };
-      // VIKTIG: bevar PIN-feltene — ellers slettes PIN hver gang noen lagrer favoritter
-      if (existing.pinHash) { record.pinHash = existing.pinHash; record.pinSalt = existing.pinSalt; }
+      }, existing);
       await store.setJSON('user:' + user, record);
       return json({ ok: true, user, count: favorites.length, friends: friends.length });
     }
