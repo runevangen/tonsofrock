@@ -412,9 +412,12 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.11.1-beta';
+    const APP_VERSION = 'v2.11.2-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.11.2-beta', date: '2026-11-05', changes: [
+        'Tribune: andres posisjoner oppdateres nå umiddelbart (strong consistency på posisjons-lesingen), ikke opptil 60 sek forsinket.'
+      ]},
       { version: 'v2.11.1-beta', date: '2026-11-05', changes: [
         'Fikset: egen tribune-posisjon kunne henge igjen på gammel verdi hvis du lukket og gikk raskt tilbake (tregt server-svar). Din siste handling vinner nå alltid.'
       ]},
