@@ -1,6 +1,6 @@
 # Tons of Rock – status og oversikt
 
-Sist oppdatert: 2026-11-05 · gjeldende versjon: **v2.14.0-beta**
+Sist oppdatert: 2026-11-05 · gjeldende versjon: **v2.15.0-beta**
 
 Dette er en flerbruker-festivalapp (hobbyprosjekt for en vennegjeng). Appen
 er fra 2026-utgaven og prepes nå for neste år. Denne fila er et startpunkt
@@ -27,8 +27,8 @@ Appen er ikke «live» for publikum nå; endringer kan trygt kjøres til `main`
 - **Admin-passord** ligger i Netlify-miljøvariabelen `ADMIN_PASSWORD` (ikke i koden). Gjenbrukes av favorites/lineup/mappins.
 - **PIN** lagres aldri i klartekst – saltet SHA-256 (Web Crypto). Se `preservePin()` i favorites.js: PIN-feltene MÅ bevares på hver skriveoperasjon som bygger ny record, ellers slettes PIN-en.
 - **Tribune-posisjon** datamodell: `positions[band] = { pos:0-8, sub:0-8, status:'present'|'planned', meet:bool }`. `pos` = sone (3×3), `sub` = finjustering i sonen (4 = midten). Bakoverkompatibelt (manglende sub/status → midten/er her).
-- **Kart-GPS** (`index.html`, `MAP_BOX`-konstanten): kalibreringsboks med ekte bredde/lengdegrad for kartets kanter. Ekebergsletta ~59.8936°N, 10.7808°Ø. Juster `MAP_BOX` hvis «jeg er her» havner feil på stedet. Kartet er **vårt eget skjematiske** (ikke det offisielle – opphavsrett), ikke i målestokk.
-- **Kart-nåler** er admin-plasserte og delt. Seedet med omtrentlige plassholdere (`DEFAULT_PINS` i mappins.js) som skal flyttes presist ut fra festivalkartet.
+- **Kart** (`index.html`): Leaflet 1.9.4 fra cdnjs + OSM-fliser (`tile.openstreetmap.org`, må beholde attribusjon). Senter `MAP_CENTER` ~59.8936°N, 10.7808°Ø. GPS vises direkte i lat/lng – ingen kalibrering lenger. OSM-tile-policy er OK for en liten vennegjeng; ved mer trafikk bør en egen tile-leverandør brukes.
+- **Kart-nåler** er admin-plasserte og delt. Nåler er `{id,name,type,lat,lng}`. Seedet med omtrentlige GJETTEDE plassholdere (`DEFAULT_PINS` i mappins.js) – festivalens egen plan er ikke kjent og må flyttes presist via admin.
 - Footer-versjon = deploy-kvittering. Ser du gammelt nr.? Hard refresh / privat vindu (cache).
 
 ## Testing (etablert mønster)
@@ -39,6 +39,7 @@ Appen er ikke «live» for publikum nå; endringer kan trygt kjøres til `main`
 - Sandkassen når IKKE Netlify/Blobs live – all live-oppførsel må testes av Rune.
 
 ## Hva som er gjort (nyeste først)
+- **v2.15.0** Ekte kart: Leaflet + OpenStreetMap (ODbL, kildehenvisning i kartet) i stedet for skjematisk SVG. Nåler bruker lat/lng, ny type 🍺 bar, 20 plassholder-nåler (barer, toaletter, mat, førstehjelp, vann). Lagring flyttet til Blobs-nøkkel `current-v2`. `.modal-overlay` z-index 100→400 (modaler havnet bak fullskjerm-kartet).
 - **v2.14.0** Ekebergsletta-kart: eget skjematisk kart, GPS «jeg er her», admin-plasserbare nåler (mappins.js).
 - **v2.13.x** Tribune: klikk sone → fullskjerm med fulle navn + piler; minikart med prikker + teller; brødsmule/sonenavn.
 - **v2.12.0** Tribune: finjustering i sonen (sub) + status planlagt/er her.
@@ -47,7 +48,7 @@ Appen er ikke «live» for publikum nå; endringer kan trygt kjøres til `main`
 - Tidligere: review-fikser (XSS-escaping, tilgjengelighet, lang=no), admin-redigering av program, tema, tekststørrelse, venner, m.m.
 
 ## Åpne punkter / neste steg
-- **Kart:** kalibrere `MAP_BOX` på stedet; plassere de ekte 2026-mat/møtepunktene via admin. (Se egen GitHub-issue.)
+- **Kart:** plassere de ekte 2026-mat/møtepunktene via admin. (Se egen GitHub-issue.)
 - **Mulig:** «✨ Møt meg her» som personlig nål på kartet (i tillegg til møtepunkt-nåler).
 - **Kjent teknisk gjeld (fra kodegjennomgang):** skrive-API-ene (`/favorites`, `/position`, `/mappins`-GET) er uautentiserte for lesing/skriving av vanlige data – PIN gjelder bare innloggings-UI, ikke skrive-API-et. Greit for en liten vennegjeng, men bør vurderes hvis appen deles bredt.
 - **Programdata:** to oppføringer har sluttid før starttid og må få riktige tider: `p046` (Storm, fredag Moonlight) og `p066` (Gatecreeper, lørdag). Krever de faktiske spilletidene.

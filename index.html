@@ -234,16 +234,14 @@
     .map-overlay .zv-top { flex-shrink: 0; }
     .map-body { flex: 1; display: flex; flex-direction: column; padding: 0.6rem 0.8rem 0.5rem; min-height: 0; overflow-y: auto; }
     .map-note { font-size: 0.68rem; color: #71717a; text-align: center; margin-bottom: 0.4rem; line-height: 1.4; }
-    .mapwrap { position: relative; border-radius: 0.6rem; overflow: hidden; border: 1px solid #27272a; flex-shrink: 0; }
-    .mapwrap svg { display: block; width: 100%; height: auto; background: #0c120c; }
-    .map-north { position: absolute; top: 8px; right: 10px; background: rgba(0,0,0,0.6); border-radius: 0.4rem; padding: 0.15rem 0.4rem; font-size: 0.68rem; font-weight: 800; color: #fbbf24; }
-    .pin { position: absolute; transform: translate(-50%,-100%); font-size: 1.1rem; cursor: pointer; text-align: center; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8)); }
-    .pin .pin-label { display: block; font-size: 0.56rem; font-weight: 700; color: #fff; background: rgba(0,0,0,0.55); border-radius: 0.3rem; padding: 0 0.2rem; margin-top: 1px; white-space: nowrap; max-width: 6rem; overflow: hidden; text-overflow: ellipsis; transform: translateX(-50%); margin-left: 50%; }
-    .pin.editing { outline: 2px dashed #fbbf24; border-radius: 0.3rem; }
-    .you-dot-wrap { position: absolute; transform: translate(-50%,-50%); pointer-events: none; }
-    .you-dot-wrap .pulse { position: absolute; width: 2.6rem; height: 2.6rem; border-radius: 50%; background: rgba(251,191,36,0.22); left: 50%; top: 50%; transform: translate(-50%,-50%); animation: youpulse 2s ease-out infinite; }
-    .you-dot-wrap .core { position: relative; width: 0.9rem; height: 0.9rem; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 0 2px #000; }
-    @keyframes youpulse { 0% { opacity: 0.6; transform: translate(-50%,-50%) scale(0.5); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.3); } }
+    .mapwrap { position: relative; isolation: isolate; z-index: 0; border-radius: 0.6rem; overflow: hidden; border: 1px solid #27272a; flex-shrink: 0; height: 58vh; min-height: 300px; background: #1a1a1a; }
+    .mapwrap .leaflet-container { width: 100%; height: 100%; font: inherit; }
+    .pin-ico { background: none; border: none; }
+    .pin-ico .pin { display: flex; flex-direction: column; align-items: center; transform: translate(-50%,-100%); position: absolute; left: 0; top: 0; font-size: 1.25rem; line-height: 1; cursor: pointer; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7)); }
+    .pin-ico .pin-label { font-size: 0.58rem; font-weight: 700; color: #fff; background: rgba(0,0,0,0.65); border-radius: 0.3rem; padding: 0 0.25rem; margin-top: 1px; white-space: nowrap; max-width: 7rem; overflow: hidden; text-overflow: ellipsis; }
+    .pin-ico .pin.editing { outline: 2px dashed #fbbf24; border-radius: 0.3rem; }
+    .you-ico { background: none; border: none; }
+    .you-ico .core { width: 0.9rem; height: 0.9rem; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 0 2px #000, 0 0 0 6px rgba(251,191,36,0.3); }
     .map-controls { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-shrink: 0; }
     .map-controls .status-btn, .map-controls .meet-btn { flex: 1; width: auto; }
     .map-legend { margin-top: 0.7rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.8rem; font-size: 0.74rem; color: #d4d4d8; flex-shrink: 0; }
@@ -309,7 +307,7 @@
     .stage-moonlight .stage-badge { border-left-color: #3b82f6; }
     .stage-storm { border-color: #a8a29e; }
     .stage-storm .stage-badge { border-left-color: #a8a29e; }
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.9); display: flex; align-items: center; justify-content: center; z-index: 400; padding: 1rem; }
     .modal { background: #18181b; border: 1px solid #27272a; border-radius: 0.5rem; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 2rem; position: relative; }
     .modal-close { position: absolute; top: 1rem; right: 1rem; background: #27272a; border: none; color: #fff; width: 2rem; height: 2rem; border-radius: 0.25rem; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
     .modal-close:hover { background: #3f3f46; }
@@ -434,6 +432,9 @@
     body.light .size-control button { background: #e0d3b5; color: #5c4a2a; border-color: #d6c9ad; }
     body.light .size-control button.active { background: #ea580c; color: #fff; border-color: #ea580c; }
   </style>
+  <!-- Leaflet + OpenStreetMap (åpen lisens ODbL — krever kildehenvisning) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
   <div class="header" style="position:relative;">
@@ -515,9 +516,14 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.14.0-beta';
+    const APP_VERSION = 'v2.15.0-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.15.0-beta', date: '2026-11-05', changes: [
+        'Kartet er nå et ekte kart (OpenStreetMap, åpen lisens) i stedet for skjematisk tegning — zoom og flytt fritt.',
+        'Nye nåler: 🍺 barer, flere 🚻 toaletter, 🍔 mat, førstehjelp og vann. Plasseringene er omtrentlige og kan flyttes av admin.',
+        '«Jeg er her» viser nå GPS-posisjonen din direkte på det ekte kartet, med nøyaktighetssirkel.'
+      ]},
       { version: 'v2.14.0-beta', date: '2026-11-05', changes: [
         'NYTT: Ekebergsletta-kart (📍 i toppen) — eget skjematisk kart med «jeg er her» via GPS.',
         'Nåler for scener, mat, møtepunkt, toalett og inngang — admin plasserer dem (lagres i skyen, alle ser de samme).',
@@ -2077,20 +2083,13 @@
       });
     }
 
-    // ===== EKEBERGSLETTA-KART (eget skjematisk kart + GPS «jeg er her») =====
-    // Kalibrerings-boks: ekte bredde/lengdegrad for kartets kanter. Juster
-    // disse hvis «jeg er her» havner feil på sletta (senter ~59.8936, 10.7808).
-    const MAP_BOX = { latMin: 59.89157, latMax: 59.89563, lngMin: 10.77676, lngMax: 10.78484 };
-    const PIN_ICON = { stage: '🎸', food: '🍔', meet: '📍', toilet: '🚻', entrance: '🚪', other: '📌' };
-    const PIN_TYPES = [['stage','Scene'],['food','Mat'],['meet','Møtepunkt'],['toilet','Toalett'],['entrance','Inngang'],['other','Annet']];
-    // Skjematisk gresslette (vårt eget — ikke det offisielle kartet).
-    const MAP_SVG = `<svg viewBox="0 0 400 520">
-        <rect x="0" y="0" width="400" height="520" fill="#0c120c"/>
-        <path d="M30,40 Q200,10 370,50 Q390,260 360,480 Q200,510 40,470 Q10,250 30,40 Z" fill="#14301a" stroke="#1f4a2a" stroke-width="2"/>
-        <path d="M40,250 Q200,230 360,260" stroke="#2a4a33" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
-        <path d="M200,60 Q210,260 200,470" stroke="#2a4a33" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
-        <g fill="#1c3b24"><circle cx="60" cy="90" r="7"/><circle cx="80" cy="110" r="5"/><circle cx="340" cy="100" r="7"/><circle cx="355" cy="130" r="5"/><circle cx="55" cy="430" r="6"/><circle cx="350" cy="440" r="7"/></g>
-      </svg>`;
+    // ===== EKEBERGSLETTA-KART (ekte OpenStreetMap + GPS «jeg er her») =====
+    // Kartdata © OpenStreetMap-bidragsytere (ODbL) — kildehenvisning vises i kartet.
+    const MAP_CENTER = [59.8936, 10.7808];   // Ekebergsletta
+    const MAP_ZOOM = 17;
+    const PIN_ICON = { stage: '🎸', bar: '🍺', food: '🍔', meet: '📍', toilet: '🚻', entrance: '🚪', other: '📌' };
+    const PIN_NAME = { stage: 'Scene', bar: 'Bar', food: 'Mat', meet: 'Møtepunkt', toilet: 'Toalett', entrance: 'Inngang', other: 'Annet' };
+    const PIN_TYPES = Object.entries(PIN_NAME);
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
     async function openMapView() {
@@ -2108,14 +2107,14 @@
           <div><div class="zv-crumb">Tons of Rock ›</div><h3>Ekebergsletta-kart</h3></div>
         </div>
         <div class="map-body">
-          <div class="map-note">Vårt eget skjematiske kart (ikke det offisielle) · ikke i målestokk · «jeg er her» er omtrentlig</div>
-          <div class="mapwrap" id="mapwrap">${MAP_SVG}<div class="map-north">N ↑</div></div>
+          <div class="map-note">Ekte kart fra OpenStreetMap · plassering av barer, toaletter og mat er omtrentlig (ikke offisielt festivalkart) · «jeg er her» er omtrentlig</div>
+          <div class="mapwrap" id="mapwrap"></div>
           <div class="map-controls">
             <button class="status-btn" id="hereBtn">📍 Jeg er her</button>
           </div>
           <div class="status" id="mapStatus" style="font-size:0.74rem;color:#71717a;text-align:center;margin-top:0.5rem;min-height:1rem;"></div>
           <div class="map-legend">
-            <div class="it">🎸 Scene</div><div class="it">🍔 Mat</div>
+            <div class="it">🎸 Scene</div><div class="it">🍺 Bar</div><div class="it">🍔 Mat</div>
             <div class="it">📍 Møtepunkt</div><div class="it">🚻 Toalett</div>
             <div class="it">🚪 Inngang</div><div class="it"><span style="color:#fbbf24;">●</span> Deg (GPS)</div>
           </div>
@@ -2127,20 +2126,34 @@
       const wrap = overlay.querySelector('#mapwrap');
       const statusEl = overlay.querySelector('#mapStatus');
 
+      if (typeof L === 'undefined') {
+        wrap.innerHTML = '<div style="padding:1.5rem;text-align:center;color:#a1a1aa;font-size:0.85rem;">Kartet kunne ikke lastes (mangler nett). Prøv igjen når du har dekning.</div>';
+        overlay.querySelector('.zv-back').addEventListener('click', () => overlay.remove());
+        return;
+      }
+      const map = L.map(wrap, { center: MAP_CENTER, zoom: MAP_ZOOM, maxZoom: 19, minZoom: 14, zoomControl: true });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bidragsytere'
+      }).addTo(map);
+      setTimeout(() => map.invalidateSize(), 0);
+      const pinLayer = L.layerGroup().addTo(map);
+      let youMarker = null, youCircle = null;
+
       function renderPins() {
-        wrap.querySelectorAll('.pin').forEach(p => p.remove());
+        pinLayer.clearLayers();
         pins.forEach(p => {
-          const el = document.createElement('div');
-          el.className = 'pin' + (moveTargetId === p.id ? ' editing' : '');
-          el.style.left = p.x + '%';
-          el.style.top = p.y + '%';
-          el.innerHTML = `${PIN_ICON[p.type] || '📌'}<span class="pin-label">${esc(p.name)}</span>`;
-          el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (editMode) editPin(p);
-            else showModal(esc(p.name), ({stage:'Scene',food:'Mat',meet:'Møtepunkt',toilet:'Toalett',entrance:'Inngang',other:'Sted'})[p.type] || 'Sted', `<p style="color:#d4d4d8;">${PIN_ICON[p.type] || '📌'} ${esc(p.name)}</p>`);
+          const icon = L.divIcon({
+            className: 'pin-ico',
+            html: `<div class="pin${moveTargetId === p.id ? ' editing' : ''}">${PIN_ICON[p.type] || '📌'}<span class="pin-label">${esc(p.name)}</span></div>`,
+            iconSize: [0, 0]
           });
-          wrap.appendChild(el);
+          const m = L.marker([p.lat, p.lng], { icon, keyboard: false }).addTo(pinLayer);
+          m.on('click', (e) => {
+            if (e.originalEvent) L.DomEvent.stopPropagation(e);
+            if (editMode) editPin(p);
+            else showModal(esc(p.name), PIN_NAME[p.type] || 'Sted', `<p style="color:#d4d4d8;">${PIN_ICON[p.type] || '📌'} ${esc(p.name)}</p><p style="color:#71717a;font-size:0.78rem;">Omtrentlig plassering — kan avvike fra festivalens eget kart.</p>`);
+          });
         });
       }
 
@@ -2150,35 +2163,29 @@
         statusEl.textContent = '📡 Henter posisjon…';
         navigator.geolocation.getCurrentPosition((pos) => {
           const { latitude, longitude, accuracy } = pos.coords;
-          const inside = latitude >= MAP_BOX.latMin - 0.002 && latitude <= MAP_BOX.latMax + 0.002 && longitude >= MAP_BOX.lngMin - 0.003 && longitude <= MAP_BOX.lngMax + 0.003;
-          const x = clamp(((longitude - MAP_BOX.lngMin) / (MAP_BOX.lngMax - MAP_BOX.lngMin)) * 100, 0, 100);
-          const y = clamp(((MAP_BOX.latMax - latitude) / (MAP_BOX.latMax - MAP_BOX.latMin)) * 100, 0, 100);
-          wrap.querySelectorAll('.you-dot-wrap').forEach(d => d.remove());
-          const you = document.createElement('div');
-          you.className = 'you-dot-wrap';
-          you.style.left = x + '%'; you.style.top = y + '%';
-          you.innerHTML = '<div class="pulse"></div><div class="core"></div>';
-          wrap.appendChild(you);
-          statusEl.innerHTML = inside
-            ? `📍 Omtrentlig posisjon vist (GPS ±${Math.round(accuracy)} m).`
-            : `📍 Du ser ikke ut til å være på Ekebergsletta nå — prikken viser nærmeste kant. (GPS ±${Math.round(accuracy)} m)`;
+          const near = Math.abs(latitude - MAP_CENTER[0]) < 0.01 && Math.abs(longitude - MAP_CENTER[1]) < 0.02;
+          if (youMarker) { youMarker.remove(); youCircle.remove(); }
+          youCircle = L.circle([latitude, longitude], { radius: accuracy, color: '#fbbf24', weight: 1, fillOpacity: 0.12 }).addTo(map);
+          youMarker = L.marker([latitude, longitude], { icon: L.divIcon({ className: 'you-ico', html: '<div class="core"></div>', iconSize: [14, 14], iconAnchor: [7, 7] }), interactive: false }).addTo(map);
+          map.setView([latitude, longitude], Math.max(map.getZoom(), 17));
+          statusEl.innerHTML = near
+            ? `📍 Din posisjon vist (GPS ±${Math.round(accuracy)} m).`
+            : `📍 Du er ikke på Ekebergsletta nå — kartet viser hvor du er. (GPS ±${Math.round(accuracy)} m)`;
         }, (err) => {
           statusEl.textContent = 'Fikk ikke posisjon: ' + (err.code === 1 ? 'du må tillate posisjon i nettleseren.' : err.message);
         }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 });
       });
 
       // Klikk på kartet i redigeringsmodus → legg til nål (eller flytt valgt)
-      wrap.addEventListener('click', (e) => {
+      map.on('click', (e) => {
         if (!editMode) return;
-        const rect = wrap.getBoundingClientRect();
-        const xPct = clamp(((e.clientX - rect.left) / rect.width) * 100, 0, 100);
-        const yPct = clamp(((e.clientY - rect.top) / rect.height) * 100, 0, 100);
+        const { lat, lng } = e.latlng;
         if (moveTargetId) {
           const p = pins.find(x => x.id === moveTargetId);
           moveTargetId = null;
-          if (p) savePin({ ...p, x: xPct, y: yPct });
+          if (p) savePin({ ...p, lat, lng });
         } else {
-          addPinAt(xPct, yPct);
+          addPinAt(lat, lng);
         }
       });
 
@@ -2203,7 +2210,7 @@
       function pinForm(title, initial, onSave, onDelete, onMove) {
         const typeOpts = PIN_TYPES.map(([v, l]) => `<option value="${v}" ${v === initial.type ? 'selected' : ''}>${l}</option>`).join('');
         const m = showModal(title, 'Kart-nål', `
-          <div class="form-field"><label>Navn</label><input type="text" id="pinName" maxlength="60" value="${esc(initial.name || '')}" placeholder="f.eks. Mat – burger"></div>
+          <div class="form-field"><label>Navn</label><input type="text" id="pinName" maxlength="60" value="${esc(initial.name || '')}" placeholder="f.eks. Bar vest"></div>
           <div class="form-field"><label>Type</label><select id="pinType">${typeOpts}</select></div>
           <div id="pinFormStatus"></div>
           <button class="modal-btn primary" id="pinSave">💾 Lagre</button>
@@ -2221,8 +2228,8 @@
         if (onDelete) m.querySelector('#pinDel').addEventListener('click', () => { if (confirm('Slette denne nålen?')) { onDelete(); m.remove(); } });
       }
 
-      function addPinAt(x, y) {
-        pinForm('+ Ny nål', { name: '', type: 'food' }, (name, type) => savePin({ name, type, x, y }));
+      function addPinAt(lat, lng) {
+        pinForm('+ Ny nål', { name: '', type: 'bar' }, (name, type) => savePin({ name, type, lat, lng }));
       }
       function editPin(p) {
         pinForm('✏️ ' + p.name, p, (name, type) => savePin({ ...p, name, type }), () => deletePin(p.id), () => {
@@ -2279,7 +2286,7 @@
       }
 
       overlay.querySelector('#editToggle').addEventListener('click', openAdminPrompt);
-      overlay.querySelector('.zv-back').addEventListener('click', () => overlay.remove());
+      overlay.querySelector('.zv-back').addEventListener('click', () => { map.remove(); overlay.remove(); });
       renderPins();
     }
 
