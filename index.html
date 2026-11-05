@@ -174,8 +174,18 @@
     /* Retnings-pil på minikart-boble + antall-teller per sone */
     .bub .bub-arrow { position: absolute; font-size: 0.62rem; line-height: 1; color: #fff; text-shadow: 0 0 2px #000; font-weight: 900; }
     .bub.me .bub-arrow { color: #000; text-shadow: 0 0 2px #fbbf24; }
-    .zone-count { position: absolute; bottom: 3px; right: 5px; font-size: 0.52rem; color: #71717a; }
-    body.light .zone-count { color: #9c8861; }
+    .zone-count { position: absolute; bottom: 3px; right: 5px; font-size: 0.68rem; color: #d4d4d8; font-weight: 700; }
+    body.light .zone-count { color: #57534e; }
+    /* Minikart-markør: liten prikk etter plassering (detaljer i fullskjerm) */
+    .dot { position: absolute; width: 0.55rem; height: 0.55rem; border-radius: 50%; transform: translate(-50%,-50%); }
+    .dot.me { width: 0.85rem; height: 0.85rem; background: #fbbf24; box-shadow: 0 0 0 2px #0a0a0c, 0 0 0 3px #fbbf24; z-index: 3; }
+    .dot.planned { background: transparent !important; border: 1.5px dashed #a1a1aa; }
+    .dot.planned.me { border-color: #fbbf24; }
+    .dot.c0 { background: #dc2626; } .dot.c1 { background: #2563eb; } .dot.c2 { background: #16a34a; }
+    .dot.c3 { background: #9333ea; } .dot.c4 { background: #ea580c; } .dot.c5 { background: #0891b2; }
+    .dot.seek::after { content: '✨'; position: absolute; top: -0.5rem; right: -0.4rem; font-size: 0.5rem; }
+    body.light .dot.me { background: #ea580c; box-shadow: 0 0 0 2px #fffdf8, 0 0 0 3px #ea580c; }
+    body.light .dot.planned { border-color: #9c8861; }
     /* Fullskjerm sonevisning */
     .zoneview-overlay { position: fixed; inset: 0; z-index: 300; background: #000; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
     .zv-top { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.9rem; border-bottom: 1px solid #27272a; flex-shrink: 0; }
@@ -477,9 +487,12 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.13.0-beta';
+    const APP_VERSION = 'v2.13.1-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.13.1-beta', date: '2026-11-05', changes: [
+        'Minikart: byttet overlappende initial-bobler mot små prikker + tydelig teller — rolig oversikt selv når mange står samlet. Din egen i gull, stiplet = planlagt, ✨ = søker selskap. Navn og nøyaktig plass i fullskjerm.'
+      ]},
       { version: 'v2.13.0-beta', date: '2026-11-05', changes: [
         'Tribune: trykk en sone for å åpne den i fullskjerm — se hvem som står der med fulle navn og god plass.',
         'Minikart viser nå retnings-pil på hver boble + antall personer per sone.',
@@ -1555,7 +1568,7 @@
           <div class="arena-glow"></div>
           <div id="zonesWrap"><p style="color:#71717a;text-align:center;font-size:0.85rem;">Laster posisjoner…</p></div>
         </div>
-        <div class="arena-legend">Trykk en sone for å åpne den i fullskjerm — se hvem som står der og plasser deg. Pil = retning i sonen · stiplet = planlagt · ✨ = søker selskap.</div>
+        <div class="arena-legend">Trykk en sone for å åpne den i fullskjerm — se navn, nøyaktig plass og plasser deg. Prikk = person (din i gull) · stiplet = planlagt · ✨ = søker selskap.</div>
       `;
       const modal = showModal(esc(band), sub, body);
 
@@ -1629,12 +1642,13 @@
 
       const validSub = (s) => (typeof s === 'number' && s >= 0 && s <= 8) ? s : 4;
 
-      // ===== NIVÅ 1: MINIKART (initialer + retnings-pil + antall per sone) =====
+      // ===== NIVÅ 1: MINIKART (små prikker etter plassering + antall per sone) =====
+      // Rolig oversikt: hvem/retning/navn vises i fullskjerm når sonen trykkes.
       function miniBubbles(idx) {
         const specs = [];
-        if (myPos === idx) specs.push({ me: true, init: 'DU', cls: 'me', sub: mySub, status: myStatus, meet: meetMe });
+        if (myPos === idx) specs.push({ me: true, cls: 'me', sub: mySub, status: myStatus, meet: meetMe });
         others.filter(u => u.pos === idx).forEach(u => specs.push({
-          me: false, init: computeInitials([u.user])[u.user], cls: colorClass(u.user),
+          me: false, cls: colorClass(u.user),
           sub: validSub(u.sub), status: u.status === 'planned' ? 'planned' : 'present', meet: !!u.meet
         }));
         const bySub = {};
@@ -1644,12 +1658,10 @@
           const group = bySub[sub];
           const anchor = SUBPOS[sub] || SUBPOS[4];
           group.forEach((s, k) => {
-            const dx = (k - (group.length - 1) / 2) * 16;
-            const arr = SUB_ARROWS[s.sub];
-            const cls = `bub anchored ${s.cls} ${s.status === 'planned' ? 'planned' : ''} ${s.meet ? 'seek' : ''}`;
-            const style = `left:calc(${anchor.x}% + ${dx}px);top:${anchor.y}%;transform:translate(-50%,-50%);`;
-            const arrowHTML = arr ? `<span class="bub-arrow" style="${arr.c}">${arr.g}</span>` : '';
-            html += `<span class="${cls}" style="${style}">${esc(s.init)}${arrowHTML}</span>`;
+            const dx = (k - (group.length - 1) / 2) * 9; // liten vifte ved kollisjon
+            const cls = `dot ${s.cls} ${s.status === 'planned' ? 'planned' : ''} ${s.meet ? 'seek' : ''}`;
+            const style = `left:calc(${anchor.x}% + ${dx}px);top:${anchor.y}%;`;
+            html += `<span class="${cls}" style="${style}"></span>`;
           });
         });
         return html;
