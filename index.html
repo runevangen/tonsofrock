@@ -171,6 +171,52 @@
     body.light .status-btn { border-color: #ea580c; background: #ea580c; color: #fff; }
     body.light .status-btn.planned { background: transparent; color: #c2410c; }
     body.light .bub.planned.me { border-color: #ea580c; color: #c2410c; }
+    /* Retnings-pil på minikart-boble + antall-teller per sone */
+    .bub .bub-arrow { position: absolute; font-size: 0.62rem; line-height: 1; color: #fff; text-shadow: 0 0 2px #000; font-weight: 900; }
+    .bub.me .bub-arrow { color: #000; text-shadow: 0 0 2px #fbbf24; }
+    .zone-count { position: absolute; bottom: 3px; right: 5px; font-size: 0.52rem; color: #71717a; }
+    body.light .zone-count { color: #9c8861; }
+    /* Fullskjerm sonevisning */
+    .zoneview-overlay { position: fixed; inset: 0; z-index: 300; background: #000; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+    .zv-top { display: flex; align-items: center; gap: 0.6rem; padding: 0.7rem 0.9rem; border-bottom: 1px solid #27272a; flex-shrink: 0; }
+    .zv-back { font-size: 1.4rem; color: #a1a1aa; cursor: pointer; background: none; border: none; line-height: 1; }
+    .zv-top h3 { font-size: 1.05rem; font-weight: 900; }
+    .zv-top .zv-name { font-size: 0.72rem; color: #71717a; }
+    .zv-body { flex: 1; display: flex; flex-direction: column; padding: 0.6rem 0.8rem 0.5rem; min-height: 0; }
+    .zv-toward { text-align: center; font-size: 0.64rem; color: #52525b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+    .finegrid { flex: 1; display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr); gap: 0.45rem; min-height: 0; }
+    .fine { background: rgba(255,255,255,0.025); border: 1px dashed #3f3f46; border-radius: 0.5rem; position: relative; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 0.4rem; padding: 0.4rem; cursor: pointer; overflow: hidden; }
+    .fine:hover { border-color: #71717a; }
+    .fine.mine-cell { border-color: #fbbf24; border-style: solid; background: rgba(251,191,36,0.08); }
+    .fine-arrow { position: absolute; top: 4px; left: 6px; font-size: 0.8rem; color: #3f3f46; }
+    .fine.mine-cell .fine-arrow { color: #fbbf24; }
+    .person { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .pbub { position: relative; width: 2.1rem; height: 2.1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.64rem; font-weight: 800; color: #fff; }
+    .pbub.me { background: #fbbf24; color: #000; box-shadow: 0 0 0 2px #000, 0 0 0 3.5px #fbbf24; }
+    .pbub.planned { background: transparent !important; border: 2px dashed #a1a1aa; color: #e4e4e7; }
+    .pbub.planned.me { border-color: #fbbf24; color: #fbbf24; box-shadow: none; }
+    .pbub.c0 { background: #dc2626; } .pbub.c1 { background: #2563eb; } .pbub.c2 { background: #16a34a; }
+    .pbub.c3 { background: #9333ea; } .pbub.c4 { background: #ea580c; } .pbub.c5 { background: #0891b2; }
+    .pbub .seek { position: absolute; top: -0.5rem; right: -0.45rem; font-size: 0.7rem; }
+    .pname { font-size: 0.62rem; color: #d4d4d8; max-width: 5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .person.me-p .pname { color: #fbbf24; font-weight: 700; }
+    .pstat { font-size: 0.52rem; color: #71717a; }
+    .zv-controls { flex-shrink: 0; padding-top: 0.5rem; }
+    .zv-hint { font-size: 0.7rem; color: #71717a; text-align: center; margin-bottom: 0.4rem; min-height: 1rem; }
+    .zv-btnrow { display: flex; gap: 0.5rem; }
+    .zv-btnrow .status-btn, .zv-btnrow .meet-btn { flex: 1; width: auto; }
+    .zv-leave { width: 100%; margin-top: 0.5rem; border-radius: 0.5rem; padding: 0.5rem; font-size: 0.76rem; cursor: pointer; border: 1px solid #3f3f46; background: transparent; color: #a1a1aa; }
+    body.light .zoneview-overlay { background: #f5f0e6; }
+    body.light .zv-top { border-color: #d6c9ad; }
+    body.light .zv-top .zv-name, body.light .zv-hint, body.light .pstat { color: #9c8861; }
+    body.light .fine { background: #fffdf8; border-color: #d6c9ad; }
+    body.light .fine.mine-cell { border-color: #ea580c; background: #fde6d3; }
+    body.light .fine-arrow { color: #b5a888; }
+    body.light .fine.mine-cell .fine-arrow { color: #c2410c; }
+    body.light .pname { color: #44403c; }
+    body.light .pbub.me { background: #ea580c; color: #fff; box-shadow: 0 0 0 2px #fffdf8, 0 0 0 3.5px #ea580c; }
+    body.light .person.me-p .pname { color: #c2410c; }
+    body.light .zv-leave { border-color: #d6c9ad; color: #9c8861; }
     .concert-desc { color: #a1a1aa; font-size: 0.85rem; line-height: 1.5; margin: 0.4rem 0 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid #27272a; }
     /* Admin-lenke i footer */
     .footer .admin-link { font-size: 0.7rem; color: #3f3f46; margin-top: 0.75rem; cursor: pointer; display: inline-block; }
@@ -431,9 +477,14 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.12.0-beta';
+    const APP_VERSION = 'v2.13.0-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.13.0-beta', date: '2026-11-05', changes: [
+        'Tribune: trykk en sone for å åpne den i fullskjerm — se hvem som står der med fulle navn og god plass.',
+        'Minikart viser nå retnings-pil på hver boble + antall personer per sone.',
+        'I fullskjerm plasserer du deg ved å trykke en rute (merket med retnings-pil), og setter status / «møt meg her».'
+      ]},
       { version: 'v2.12.0-beta', date: '2026-11-05', changes: [
         'Tribune: finjuster hvor du står i sonen med et kompass (midten + 8 retninger) — f.eks. «FV, litt til høyre».',
         'Tribune: status-knapp som veksler mellom «planlagt å gå dit» (stiplet boble) og «jeg er her nå» (fylt boble).',
@@ -1479,6 +1530,13 @@
       { x: 24, y: 50 }, { x: 50, y: 50 }, { x: 76, y: 50 },
       { x: 28, y: 74 }, { x: 50, y: 78 }, { x: 72, y: 74 }
     ];
+    // Fulle sonenavn (vist i fullskjerm) + retnings-pil på minikart-bobler
+    const ZONE_NAMES = ['Foran venstre','Foran midten','Foran høyre','Midten venstre','Midten','Midten høyre','Bak venstre','Bak midten','Bak høyre'];
+    const SUB_ARROWS = [
+      { g:'↖', c:'top:-4px;left:-4px' }, { g:'↑', c:'top:-7px;left:50%;transform:translateX(-50%)' }, { g:'↗', c:'top:-4px;right:-4px' },
+      { g:'←', c:'top:50%;left:-8px;transform:translateY(-50%)' }, null, { g:'→', c:'top:50%;right:-8px;transform:translateY(-50%)' },
+      { g:'↙', c:'bottom:-4px;left:-4px' }, { g:'↓', c:'bottom:-7px;left:50%;transform:translateX(-50%)' }, { g:'↘', c:'bottom:-4px;right:-4px' }
+    ];
     const ZONE_ROWS = [
       { cls: 'foran', name: 'Foran (nærmest scenen)' },
       { cls: 'midten', name: 'Midten' },
@@ -1497,16 +1555,7 @@
           <div class="arena-glow"></div>
           <div id="zonesWrap"><p style="color:#71717a;text-align:center;font-size:0.85rem;">Laster posisjoner…</p></div>
         </div>
-        <div class="pos-tools" id="posTools" style="display:none;">
-          <div class="pos-tools-label">Finjuster i sonen — trykk midten eller en pil</div>
-          <div class="compass" id="compass"></div>
-          <button class="status-btn" id="statusBtn"></button>
-        </div>
-        <div class="meet-toggle">
-          <div class="mt-text">✨ Møt meg her<small>Synlig kun her — markerer at du søker selskap</small></div>
-          <button class="meet-btn" id="meetBtn" disabled>AV</button>
-        </div>
-        <div class="arena-legend">Trykk en sone for å plassere deg (lagres med en gang), så finjuster med kompasset. Stiplet boble = planlagt, fylt = er her nå. Trykk en boble for å se navn. ✨ = søker selskap.</div>
+        <div class="arena-legend">Trykk en sone for å åpne den i fullskjerm — se hvem som står der og plasser deg. Pil = retning i sonen · stiplet = planlagt · ✨ = søker selskap.</div>
       `;
       const modal = showModal(esc(band), sub, body);
 
@@ -1544,14 +1593,6 @@
         myStatus = m.status || 'present';
       }
 
-      const meetBtn = modal.querySelector('#meetBtn');
-      meetBtn.disabled = false;
-      function updateMeetBtn() {
-        meetBtn.textContent = meetMe ? 'PÅ ✨' : 'AV';
-        meetBtn.classList.toggle('on', meetMe);
-      }
-      updateMeetBtn();
-
       // Sekvensiell lagring — unngår at raske klikk racer og overskriver hverandre
       let saveChain = Promise.resolve();
       let saveError = false;
@@ -1586,20 +1627,16 @@
         return saveChain;
       }
 
-      // Bygger boblene i én sone, forankret etter under-posisjon (sub).
-      // Flere bobler på samme sub viftes litt ut vannrett så de ikke dekker hverandre.
-      function bubblesForZone(idx) {
+      const validSub = (s) => (typeof s === 'number' && s >= 0 && s <= 8) ? s : 4;
+
+      // ===== NIVÅ 1: MINIKART (initialer + retnings-pil + antall per sone) =====
+      function miniBubbles(idx) {
         const specs = [];
-        if (myPos === idx) specs.push({ me: true, name: 'Deg', init: 'DU', cls: 'me', sub: mySub, status: myStatus, meet: meetMe });
-        others.filter(u => u.pos === idx).forEach(u => {
-          specs.push({
-            me: false, name: u.user, init: computeInitials([u.user])[u.user],
-            cls: colorClass(u.user),
-            sub: (typeof u.sub === 'number' && u.sub >= 0 && u.sub <= 8) ? u.sub : 4,
-            status: u.status === 'planned' ? 'planned' : 'present',
-            meet: !!u.meet
-          });
-        });
+        if (myPos === idx) specs.push({ me: true, init: 'DU', cls: 'me', sub: mySub, status: myStatus, meet: meetMe });
+        others.filter(u => u.pos === idx).forEach(u => specs.push({
+          me: false, init: computeInitials([u.user])[u.user], cls: colorClass(u.user),
+          sub: validSub(u.sub), status: u.status === 'planned' ? 'planned' : 'present', meet: !!u.meet
+        }));
         const bySub = {};
         specs.forEach(s => { (bySub[s.sub] = bySub[s.sub] || []).push(s); });
         let html = '';
@@ -1607,16 +1644,18 @@
           const group = bySub[sub];
           const anchor = SUBPOS[sub] || SUBPOS[4];
           group.forEach((s, k) => {
-            const dx = (k - (group.length - 1) / 2) * 16; // vifte ut vannrett ved kollisjon
+            const dx = (k - (group.length - 1) / 2) * 16;
+            const arr = SUB_ARROWS[s.sub];
             const cls = `bub anchored ${s.cls} ${s.status === 'planned' ? 'planned' : ''} ${s.meet ? 'seek' : ''}`;
             const style = `left:calc(${anchor.x}% + ${dx}px);top:${anchor.y}%;transform:translate(-50%,-50%);`;
-            html += `<span class="${cls}" style="${style}" data-name="${esc(s.name)}" data-seek="${s.meet}" data-planned="${s.status === 'planned'}">${esc(s.init)}</span>`;
+            const arrowHTML = arr ? `<span class="bub-arrow" style="${arr.c}">${arr.g}</span>` : '';
+            html += `<span class="${cls}" style="${style}">${esc(s.init)}${arrowHTML}</span>`;
           });
         });
         return html;
       }
 
-      function renderZones() {
+      function renderMap() {
         const wrap = document.getElementById('zonesWrap');
         if (!wrap) return;
         let html = '';
@@ -1624,96 +1663,96 @@
           html += `<div class="zone-side-label">${ZONE_ROWS[r].name}</div><div class="zone-row ${ZONE_ROWS[r].cls}">`;
           for (let c = 0; c < 3; c++) {
             const idx = r * 3 + c;
-            const mine = myPos === idx;
-            html += `<div class="zone ${mine ? 'mine' : ''}" data-zone="${idx}"><span class="zone-tag">${ZONE_TAGS[idx]}</span>${bubblesForZone(idx)}</div>`;
+            const count = others.filter(u => u.pos === idx).length + (myPos === idx ? 1 : 0);
+            html += `<div class="zone ${myPos === idx ? 'mine' : ''}" data-zone="${idx}"><span class="zone-tag">${ZONE_TAGS[idx]}</span>${miniBubbles(idx)}${count ? `<span class="zone-count">${count}👤</span>` : ''}</div>`;
           }
           html += `</div>`;
         }
         wrap.innerHTML = html;
         const oldWarn = document.getElementById('posWarn');
         if (oldWarn && !saveError) oldWarn.remove();
-        // Klikk på sone → plasser meg (eller fjern meg om jeg klikker samme sone)
+        // Klikk en sone → åpne den i fullskjerm
         wrap.querySelectorAll('.zone').forEach(z => {
-          z.addEventListener('click', () => {
-            const idx = parseInt(z.dataset.zone);
-            if (myPos === idx) {
-              myPos = null; meetMe = false; updateMeetBtn(); // forlat kartet
-            } else {
-              myPos = idx; mySub = 4;  // ny sone: start i midten
-            }
-            renderZones();
-            savePosition();
-          });
-        });
-        // Klikk på boble → vis navn (og status/søker-selskap)
-        wrap.querySelectorAll('.bub').forEach(b => {
-          b.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const nm = b.dataset.name;
-            const seek = b.dataset.seek === 'true';
-            const planned = b.dataset.planned === 'true';
-            const hvor = planned ? 'planlegger å gå hit' : 'står her';
-            showModal(esc(nm), 'På tribunen', `<p style="color:#d4d4d8;">${esc(nm)} ${hvor}${seek ? ' og <strong style="color:#fbbf24;">søker selskap ✨</strong>' : '.'}</p>`);
-          });
-        });
-        updatePosTools();
-      }
-
-      // Kompass-velger + status-knapp vises kun når jeg står et sted
-      function renderCompass() {
-        const el = document.getElementById('compass');
-        if (!el) return;
-        el.innerHTML = '';
-        COMPASS_GLYPHS.forEach((g, i) => {
-          const b = document.createElement('div');
-          b.className = 'cbtn' + (i === mySub ? ' sel' : '');
-          b.textContent = g;
-          b.addEventListener('click', () => { mySub = i; renderZones(); savePosition(); });
-          el.appendChild(b);
+          z.addEventListener('click', () => openZoneView(parseInt(z.dataset.zone)));
         });
       }
-      function updateStatusBtn() {
-        const b = document.getElementById('statusBtn');
-        if (!b) return;
-        b.textContent = myStatus === 'present' ? '✅ Jeg er her nå' : '🕒 Planlagt å gå dit';
-        b.classList.toggle('planned', myStatus === 'planned');
-      }
-      function updatePosTools() {
-        const pt = document.getElementById('posTools');
-        if (!pt) return;
-        if (myPos === null) { pt.style.display = 'none'; return; }
-        pt.style.display = 'block';
-        renderCompass();
-        updateStatusBtn();
-      }
-      renderZones();
 
-      // Status-knapp: veksler mellom «er her» og «planlagt»
-      modal.querySelector('#statusBtn').addEventListener('click', () => {
-        myStatus = myStatus === 'present' ? 'planned' : 'present';
-        updateStatusBtn();
-        renderZones();
-        savePosition();
-      });
+      // ===== NIVÅ 2: FULLSKJERM SONE (fine rutenett med piler + fulle navn) =====
+      function openZoneView(idx) {
+        const overlay = document.createElement('div');
+        overlay.className = 'zoneview-overlay';
+        if (document.body.classList.contains('light')) overlay.classList.add('light');
+        overlay.innerHTML = `
+          <div class="zv-top">
+            <button class="zv-back" aria-label="Tilbake">←</button>
+            <div><h3>${ZONE_TAGS[idx]}</h3><div class="zv-name">${ZONE_NAMES[idx]}</div></div>
+          </div>
+          <div class="zv-body">
+            <div class="zv-toward">↑ mot scenen</div>
+            <div class="finegrid" id="finegrid"></div>
+            <div class="zv-controls">
+              <div class="zv-hint" id="zvHint"></div>
+              <div class="zv-btnrow">
+                <button class="status-btn" id="zvStatus"></button>
+                <button class="meet-btn" id="zvMeet"></button>
+              </div>
+              <button class="zv-leave" id="zvLeave">Forlat denne sonen</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
 
-      meetBtn.addEventListener('click', () => {
-        meetMe = !meetMe;
-        updateMeetBtn();
-        renderZones();
-        if (myPos !== null) {
-          savePosition();
-        } else if (meetMe) {
-          // Søker selskap, men står ingen steder ennå — be om sone først
-          let warn = document.getElementById('posWarn');
-          if (!warn) {
-            warn = document.createElement('div');
-            warn.id = 'posWarn';
-            warn.style.cssText = 'color:#fbbf24;font-size:0.8rem;text-align:center;margin-top:0.5rem;';
-            document.getElementById('zonesWrap').parentElement.appendChild(warn);
+        function renderFine() {
+          const grid = overlay.querySelector('#finegrid');
+          const inZone = [];
+          if (myPos === idx) inZone.push({ me: true, user: 'Deg', init: 'DU', cls: 'me', sub: mySub, status: myStatus, meet: meetMe });
+          others.filter(u => u.pos === idx).forEach(u => inZone.push({
+            me: false, user: u.user, init: computeInitials([u.user])[u.user], cls: colorClass(u.user),
+            sub: validSub(u.sub), status: u.status === 'planned' ? 'planned' : 'present', meet: !!u.meet
+          }));
+          let html = '';
+          for (let s = 0; s < 9; s++) {
+            const mineHere = (myPos === idx && mySub === s);
+            let ppl = '';
+            inZone.filter(p => p.sub === s).forEach(p => {
+              const planned = p.status === 'planned';
+              const cls = `pbub ${p.me ? 'me' : p.cls} ${planned ? 'planned' : ''} ${p.me && planned ? 'me' : ''}`;
+              ppl += `<div class="person ${p.me ? 'me-p' : ''}"><div class="${cls}">${esc(p.init)}${p.meet ? '<span class="seek">✨</span>' : ''}</div><div class="pname">${esc(p.user)}</div><div class="pstat">${planned ? 'planlagt' : 'er her'}</div></div>`;
+            });
+            html += `<div class="fine ${mineHere ? 'mine-cell' : ''}" data-sub="${s}"><span class="fine-arrow">${COMPASS_GLYPHS[s]}</span>${ppl}</div>`;
           }
-          warn.textContent = '👆 Velg en sone først, så lagres «møt meg her».';
+          grid.innerHTML = html;
+          grid.querySelectorAll('.fine').forEach(cell => {
+            cell.addEventListener('click', () => { myPos = idx; mySub = parseInt(cell.dataset.sub); renderFine(); savePosition(); });
+          });
+          const sb = overlay.querySelector('#zvStatus');
+          sb.textContent = myStatus === 'present' ? '✅ Jeg er her nå' : '🕒 Planlagt å gå dit';
+          sb.classList.toggle('planned', myStatus === 'planned');
+          const mb = overlay.querySelector('#zvMeet');
+          mb.textContent = meetMe ? '✨ Møt meg her: PÅ' : '✨ Møt meg her';
+          mb.classList.toggle('on', meetMe);
+          overlay.querySelector('#zvHint').textContent = (myPos === idx)
+            ? 'Du står her — trykk en annen rute for å flytte deg i sonen.'
+            : 'Trykk en rute for å stå her.';
         }
-      });
+        renderFine();
+
+        overlay.querySelector('#zvStatus').addEventListener('click', () => {
+          if (myPos !== idx) { overlay.querySelector('#zvHint').textContent = '👆 Trykk en rute først, så kan du sette status.'; return; }
+          myStatus = myStatus === 'present' ? 'planned' : 'present';
+          renderFine(); savePosition();
+        });
+        overlay.querySelector('#zvMeet').addEventListener('click', () => {
+          if (myPos !== idx) { overlay.querySelector('#zvHint').textContent = '👆 Trykk en rute først, så lagres «møt meg her».'; return; }
+          meetMe = !meetMe; renderFine(); savePosition();
+        });
+        overlay.querySelector('#zvLeave').addEventListener('click', () => {
+          if (myPos === idx) { myPos = null; meetMe = false; savePosition(); }
+          overlay.remove(); renderMap();
+        });
+        overlay.querySelector('.zv-back').addEventListener('click', () => { overlay.remove(); renderMap(); });
+      }
+
+      renderMap();
     }
 
     // ===== ADMIN =====
