@@ -1,6 +1,6 @@
 # Tons of Rock – status og oversikt
 
-Sist oppdatert: 2026-11-05 · gjeldende versjon: **v2.15.0-beta**
+Sist oppdatert: 2026-11-05 · gjeldende versjon: **v2.16.0-beta**
 
 Dette er en flerbruker-festivalapp (hobbyprosjekt for en vennegjeng). Appen
 er fra 2026-utgaven og prepes nå for neste år. Denne fila er et startpunkt
@@ -39,6 +39,7 @@ Appen er ikke «live» for publikum nå; endringer kan trygt kjøres til `main`
 - Sandkassen når IKKE Netlify/Blobs live – all live-oppførsel må testes av Rune.
 
 ## Hva som er gjort (nyeste først)
+- **v2.16.0** Offisielt festivalkart 2026 (`kart-2026.jpg`, brukt med tillatelse fra Rune) som `L.imageOverlay` over OSM, bryter Festivalkart/Gatekart. Nåler lagres igjen som x/y-% av bildet (`current-v3`, 47 nåler avlest fra kartet); lat/lng regnes ut via `FEST_BOUNDS` (grov kalibrering, bildet antatt nord-opp — juster ved behov). I festivalmodus vises bare møtepunkt-nåler (resten står på bildet).
 - **v2.15.0** Ekte kart: Leaflet + OpenStreetMap (ODbL, kildehenvisning i kartet) i stedet for skjematisk SVG. Nåler bruker lat/lng, ny type 🍺 bar, 20 plassholder-nåler (barer, toaletter, mat, førstehjelp, vann). Lagring flyttet til Blobs-nøkkel `current-v2`. `.modal-overlay` z-index 100→400 (modaler havnet bak fullskjerm-kartet).
 - **v2.14.0** Ekebergsletta-kart: eget skjematisk kart, GPS «jeg er her», admin-plasserbare nåler (mappins.js).
 - **v2.13.x** Tribune: klikk sone → fullskjerm med fulle navn + piler; minikart med prikker + teller; brødsmule/sonenavn.

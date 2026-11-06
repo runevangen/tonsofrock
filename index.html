@@ -236,6 +236,11 @@
     .map-note { font-size: 0.68rem; color: #71717a; text-align: center; margin-bottom: 0.4rem; line-height: 1.4; }
     .mapwrap { position: relative; isolation: isolate; z-index: 0; border-radius: 0.6rem; overflow: hidden; border: 1px solid #27272a; flex-shrink: 0; height: 58vh; min-height: 300px; background: #1a1a1a; }
     .mapwrap .leaflet-container { width: 100%; height: 100%; font: inherit; }
+    .map-modes { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .mode-btn { flex: 1; padding: 0.5rem; border-radius: 0.6rem; border: 1px solid #27272a; background: #18181b; color: #a1a1aa; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .mode-btn.active { background: #fbbf24; color: #000; border-color: #fbbf24; }
+    body.light .mode-btn { background: #fffdf8; border-color: #d6c9ad; color: #9c8861; }
+    body.light .mode-btn.active { background: #ea580c; color: #fff; border-color: #ea580c; }
     .pin-ico { background: none; border: none; }
     .pin-ico .pin { display: flex; flex-direction: column; align-items: center; transform: translate(-50%,-100%); position: absolute; left: 0; top: 0; font-size: 1.25rem; line-height: 1; cursor: pointer; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7)); }
     .pin-ico .pin-label { font-size: 0.58rem; font-weight: 700; color: #fff; background: rgba(0,0,0,0.65); border-radius: 0.3rem; padding: 0 0.25rem; margin-top: 1px; white-space: nowrap; max-width: 7rem; overflow: hidden; text-overflow: ellipsis; }
@@ -516,9 +521,14 @@
     }
     applySize(loadSize());
 
-    const APP_VERSION = 'v2.15.1-beta';
+    const APP_VERSION = 'v2.16.0-beta';
     const APP_BUILD = '2026-11-05';
     const CHANGELOG = [
+      { version: 'v2.16.0-beta', date: '2026-11-06', changes: [
+        'NYTT: Det offisielle Tons of Rock 2026-festivalkartet (brukt med tillatelse) i kartvisningen — med scener, barer, mat, toaletter og utganger. Zoom og flytt fritt.',
+        'Bryter mellom 🗺️ Festivalkart og 🛣️ Gatekart (OpenStreetMap) — i gatekartet vises alt som nåler.',
+        'Nålene er nå plassert ut fra festivalkartet (14 barer, 8 mat, 4 toaletter m.m.). «Jeg er her» er fortsatt omtrentlig. Møtepunkter kan legges til av admin.'
+      ]},
       { version: 'v2.15.1-beta', date: '2026-11-05', changes: [
         'Kart: fikset at man kunne bli «fast» — tilbake-pilen lå under hakket/statuslinjen på toppen. Lagt til safe-area-margin, en tydelig «← Lukk kart»-knapp i bunnen, og Esc lukker også (på PC).'
       ]},
@@ -2090,6 +2100,13 @@
     // Kartdata © OpenStreetMap-bidragsytere (ODbL) — kildehenvisning vises i kartet.
     const MAP_CENTER = [59.8936, 10.7808];   // Ekebergsletta
     const MAP_ZOOM = 17;
+    // Offisielt 2026-festivalkart (bilde, brukt med tillatelse) lagt over OSM.
+    // Bounds er en grov kalibrering: bildet antas nord-opp. Nålene lagres som
+    // x/y-prosent av bildet og regnes om hit, så de alltid ligger riktig på bildet.
+    const FEST_IMG = 'kart-2026.jpg';
+    const FEST_BOUNDS = [[59.89108, 10.77676], [59.89613, 10.78484]]; // [sørvest],[nordøst]
+    const ptToLatLng = (x, y) => [FEST_BOUNDS[1][0] - (y / 100) * (FEST_BOUNDS[1][0] - FEST_BOUNDS[0][0]), FEST_BOUNDS[0][1] + (x / 100) * (FEST_BOUNDS[1][1] - FEST_BOUNDS[0][1])];
+    const latLngToPt = (lat, lng) => ({ x: ((lng - FEST_BOUNDS[0][1]) / (FEST_BOUNDS[1][1] - FEST_BOUNDS[0][1])) * 100, y: ((FEST_BOUNDS[1][0] - lat) / (FEST_BOUNDS[1][0] - FEST_BOUNDS[0][0])) * 100 });
     const PIN_ICON = { stage: '🎸', bar: '🍺', food: '🍔', meet: '📍', toilet: '🚻', entrance: '🚪', other: '📌' };
     const PIN_NAME = { stage: 'Scene', bar: 'Bar', food: 'Mat', meet: 'Møtepunkt', toilet: 'Toalett', entrance: 'Inngang', other: 'Annet' };
     const PIN_TYPES = Object.entries(PIN_NAME);
@@ -2110,16 +2127,16 @@
           <div><div class="zv-crumb">Tons of Rock ›</div><h3>Ekebergsletta-kart</h3></div>
         </div>
         <div class="map-body">
-          <div class="map-note">Ekte kart fra OpenStreetMap · plassering av barer, toaletter og mat er omtrentlig (ikke offisielt festivalkart) · «jeg er her» er omtrentlig</div>
+          <div class="map-note">Offisielt festivalkart 2026 (brukt med tillatelse) lagt over OpenStreetMap · «jeg er her» er omtrentlig</div>
+          <div class="map-modes"><button class="mode-btn active" id="modeFest">🗺️ Festivalkart</button><button class="mode-btn" id="modeStreet">🛣️ Gatekart</button></div>
           <div class="mapwrap" id="mapwrap"></div>
           <div class="map-controls">
             <button class="status-btn" id="hereBtn">📍 Jeg er her</button>
           </div>
           <div class="status" id="mapStatus" style="font-size:0.74rem;color:#71717a;text-align:center;margin-top:0.5rem;min-height:1rem;"></div>
           <div class="map-legend">
-            <div class="it">🎸 Scene</div><div class="it">🍺 Bar</div><div class="it">🍔 Mat</div>
-            <div class="it">📍 Møtepunkt</div><div class="it">🚻 Toalett</div>
-            <div class="it">🚪 Inngang</div><div class="it"><span style="color:#fbbf24;">●</span> Deg (GPS)</div>
+            <div class="it">📍 Møtepunkt</div><div class="it"><span style="color:#fbbf24;">●</span> Deg (GPS)</div>
+            <div class="it" style="grid-column:1/-1;color:#71717a;">Festivalkart: scener, barer, mat og toaletter står på selve kartet. Gatekart viser dem som nåler 🎸🍺🍔🚻🚪.</div>
           </div>
           <div class="map-edit-bar" id="mapEditBar">
             <button class="map-edit-link" id="editToggle">✏️ Rediger kart (admin)</button>
@@ -2139,28 +2156,41 @@
         overlay.querySelector('#mapClose').addEventListener('click', closeNoMap);
         return;
       }
-      const map = L.map(wrap, { center: MAP_CENTER, zoom: MAP_ZOOM, maxZoom: 19, minZoom: 14, zoomControl: true });
+      const map = L.map(wrap, { center: MAP_CENTER, zoom: MAP_ZOOM, maxZoom: 20, minZoom: 14, zoomControl: true });
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bidragsytere'
+        maxZoom: 19, maxNativeZoom: 19,
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bidragsytere · Festivalkart © Tons of Rock'
       }).addTo(map);
-      setTimeout(() => map.invalidateSize(), 0);
+      const festOverlay = L.imageOverlay(FEST_IMG, FEST_BOUNDS, { opacity: 1, interactive: false }).addTo(map);
+      let mode = 'fest';
+      setTimeout(() => { map.invalidateSize(); map.fitBounds(FEST_BOUNDS); }, 0);
+      function setMode(m) {
+        mode = m;
+        festOverlay.setOpacity(m === 'fest' ? 1 : 0);
+        overlay.querySelector('#modeFest').classList.toggle('active', m === 'fest');
+        overlay.querySelector('#modeStreet').classList.toggle('active', m === 'street');
+        renderPins();
+      }
+      overlay.querySelector('#modeFest').addEventListener('click', () => setMode('fest'));
+      overlay.querySelector('#modeStreet').addEventListener('click', () => setMode('street'));
       const pinLayer = L.layerGroup().addTo(map);
       let youMarker = null, youCircle = null;
 
       function renderPins() {
         pinLayer.clearLayers();
         pins.forEach(p => {
+          // Festivalkartet har allerede alt påtegnet — vis bare møtepunkt der (alt i redigeringsmodus).
+          if (mode === 'fest' && !editMode && p.type !== 'meet') return;
           const icon = L.divIcon({
             className: 'pin-ico',
             html: `<div class="pin${moveTargetId === p.id ? ' editing' : ''}">${PIN_ICON[p.type] || '📌'}<span class="pin-label">${esc(p.name)}</span></div>`,
             iconSize: [0, 0]
           });
-          const m = L.marker([p.lat, p.lng], { icon, keyboard: false }).addTo(pinLayer);
+          const m = L.marker(ptToLatLng(p.x, p.y), { icon, keyboard: false }).addTo(pinLayer);
           m.on('click', (e) => {
             if (e.originalEvent) L.DomEvent.stopPropagation(e);
             if (editMode) editPin(p);
-            else showModal(esc(p.name), PIN_NAME[p.type] || 'Sted', `<p style="color:#d4d4d8;">${PIN_ICON[p.type] || '📌'} ${esc(p.name)}</p><p style="color:#71717a;font-size:0.78rem;">Omtrentlig plassering — kan avvike fra festivalens eget kart.</p>`);
+            else showModal(esc(p.name), PIN_NAME[p.type] || 'Sted', `<p style="color:#d4d4d8;">${PIN_ICON[p.type] || '📌'} ${esc(p.name)}</p><p style="color:#71717a;font-size:0.78rem;">Plassering avlest fra festivalkartet — omtrentlig.</p>`);
           });
         });
       }
@@ -2187,13 +2217,14 @@
       // Klikk på kartet i redigeringsmodus → legg til nål (eller flytt valgt)
       map.on('click', (e) => {
         if (!editMode) return;
-        const { lat, lng } = e.latlng;
+        const pt = latLngToPt(e.latlng.lat, e.latlng.lng);
+        const x = clamp(pt.x, 0, 100), y = clamp(pt.y, 0, 100);
         if (moveTargetId) {
-          const p = pins.find(x => x.id === moveTargetId);
+          const p = pins.find(q => q.id === moveTargetId);
           moveTargetId = null;
-          if (p) savePin({ ...p, lat, lng });
+          if (p) savePin({ ...p, x, y });
         } else {
-          addPinAt(lat, lng);
+          addPinAt(x, y);
         }
       });
 
@@ -2218,7 +2249,7 @@
       function pinForm(title, initial, onSave, onDelete, onMove) {
         const typeOpts = PIN_TYPES.map(([v, l]) => `<option value="${v}" ${v === initial.type ? 'selected' : ''}>${l}</option>`).join('');
         const m = showModal(title, 'Kart-nål', `
-          <div class="form-field"><label>Navn</label><input type="text" id="pinName" maxlength="60" value="${esc(initial.name || '')}" placeholder="f.eks. Bar vest"></div>
+          <div class="form-field"><label>Navn</label><input type="text" id="pinName" maxlength="60" value="${esc(initial.name || '')}" placeholder="f.eks. Møtepunkt ved Storm"></div>
           <div class="form-field"><label>Type</label><select id="pinType">${typeOpts}</select></div>
           <div id="pinFormStatus"></div>
           <button class="modal-btn primary" id="pinSave">💾 Lagre</button>
@@ -2236,8 +2267,8 @@
         if (onDelete) m.querySelector('#pinDel').addEventListener('click', () => { if (confirm('Slette denne nålen?')) { onDelete(); m.remove(); } });
       }
 
-      function addPinAt(lat, lng) {
-        pinForm('+ Ny nål', { name: '', type: 'bar' }, (name, type) => savePin({ name, type, lat, lng }));
+      function addPinAt(x, y) {
+        pinForm('+ Ny nål', { name: '', type: 'meet' }, (name, type) => savePin({ name, type, x, y }));
       }
       function editPin(p) {
         pinForm('✏️ ' + p.name, p, (name, type) => savePin({ ...p, name, type }), () => deletePin(p.id), () => {
