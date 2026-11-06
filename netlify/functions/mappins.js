@@ -1,7 +1,8 @@
 // Netlify Function: kart-nåler (scener, barer, mat, møtepunkt, toalett, inngang)
-// for det ekte OpenStreetMap-kartet over Ekebergsletta. Lagres i Netlify Blobs.
+// for det offisielle Tons of Rock 2026-festivalkartet (lagt over OpenStreetMap). Lagres i Netlify Blobs.
 //
-// Hver nål: { id, name, type, lat, lng }  — ekte bredde-/lengdegrad (WGS84).
+// Hver nål: { id, name, type, x, y }  — x/y i prosent (0-100) av festivalkart-bildet
+// (0,0 = øverst til venstre). Appen regner om til lat/lng for gatekartet.
 // type: 'stage' | 'bar' | 'food' | 'meet' | 'toilet' | 'entrance' | 'other'
 //
 // Endepunkter:
@@ -13,8 +14,7 @@
 //
 // Admin-passord: miljøvariabel ADMIN_PASSWORD (samme som resten).
 //
-// Lagringsnøkkelen er 'current-v2': eldre nåler (v2.14, x/y-prosent på
-// skjematisk kart) var bare plassholdere og forkastes.
+// Lagringsnøkkelen er 'current-v3': eldre nåler var gjetninger og forkastes.
 
 import { getStore } from '@netlify/blobs';
 
@@ -24,44 +24,69 @@ function json(obj, status) {
 
 const VALID_TYPES = ['stage', 'bar', 'food', 'meet', 'toilet', 'entrance', 'other'];
 
-// Omtrentlige PLASSHOLDERE rundt Ekebergsletta (~59.8936, 10.7808). Den
-// faktiske festivalplanløsningen kjenner vi ikke — admin flytter nålene
-// presist ut fra det offisielle festivalkartet.
+// Posisjoner avlest fra det offisielle 2026-kartet (x/y i % av bildet). Omtrentlige
+// (±2 %) — admin kan finjustere. Møtepunktene er forslag, ikke fra kartet.
 const DEFAULT_PINS = [
-  { id: 'p-scream',    name: 'Scream Stage',    type: 'stage',    lat: 59.8932, lng: 10.7815 },
-  { id: 'p-vampire',   name: 'Vampire Stage',   type: 'stage',    lat: 59.8950, lng: 10.7790 },
-  { id: 'p-moonlight', name: 'Moonlight Stage', type: 'stage',    lat: 59.8948, lng: 10.7835 },
-  { id: 'p-storm',     name: 'The Storm Stage', type: 'stage',    lat: 59.8920, lng: 10.7795 },
-  { id: 'p-bar1',      name: 'Bar vest',        type: 'bar',      lat: 59.8938, lng: 10.7795 },
-  { id: 'p-bar2',      name: 'Bar øst',         type: 'bar',      lat: 59.8940, lng: 10.7828 },
-  { id: 'p-bar3',      name: 'Bar Scream',      type: 'bar',      lat: 59.8927, lng: 10.7808 },
-  { id: 'p-bar4',      name: 'Bar Storm',       type: 'bar',      lat: 59.8924, lng: 10.7787 },
-  { id: 'p-food1',     name: 'Mat (burger)',    type: 'food',     lat: 59.8942, lng: 10.7805 },
-  { id: 'p-food2',     name: 'Mat (pizza)',     type: 'food',     lat: 59.8934, lng: 10.7826 },
-  { id: 'p-food3',     name: 'Mat (taco)',      type: 'food',     lat: 59.8945, lng: 10.7812 },
-  { id: 'p-toilet1',   name: 'Toalett nord',    type: 'toilet',   lat: 59.8953, lng: 10.7808 },
-  { id: 'p-toilet2',   name: 'Toalett vest',    type: 'toilet',   lat: 59.8935, lng: 10.7782 },
-  { id: 'p-toilet3',   name: 'Toalett øst',     type: 'toilet',   lat: 59.8936, lng: 10.7838 },
-  { id: 'p-toilet4',   name: 'Toalett sør',     type: 'toilet',   lat: 59.8921, lng: 10.7815 },
-  { id: 'p-meet1',     name: 'Møtepunkt – midten',  type: 'meet', lat: 59.8938, lng: 10.7808 },
-  { id: 'p-meet2',     name: 'Møtepunkt – inngang', type: 'meet', lat: 59.8918, lng: 10.7808 },
-  { id: 'p-first',     name: 'Førstehjelp',     type: 'other',    lat: 59.8929, lng: 10.7830 },
-  { id: 'p-water',     name: 'Gratis vann',     type: 'other',    lat: 59.8943, lng: 10.7798 },
-  { id: 'p-entrance',  name: 'Hovedinngang',    type: 'entrance', lat: 59.8914, lng: 10.7808 }
+  { id: 'p01', name: 'Moonlight Stage', type: 'stage', x: 70, y: 15 },
+  { id: 'p02', name: 'Vampire Stage', type: 'stage', x: 10, y: 44 },
+  { id: 'p03', name: 'The Storm Stage', type: 'stage', x: 32, y: 64 },
+  { id: 'p04', name: 'Scream Stage', type: 'stage', x: 89, y: 63 },
+  { id: 'p05', name: 'The Swamp', type: 'stage', x: 81, y: 28 },
+  { id: 'p06', name: 'Bar', type: 'bar', x: 48, y: 26 },
+  { id: 'p07', name: 'Bar', type: 'bar', x: 41, y: 31 },
+  { id: 'p08', name: 'Bar', type: 'bar', x: 34, y: 34 },
+  { id: 'p09', name: 'Bar', type: 'bar', x: 66, y: 43 },
+  { id: 'p10', name: 'Bar', type: 'bar', x: 80, y: 43 },
+  { id: 'p11', name: 'Bar', type: 'bar', x: 81, y: 46 },
+  { id: 'p12', name: 'Bar', type: 'bar', x: 82, y: 48 },
+  { id: 'p13', name: 'Bar', type: 'bar', x: 44, y: 52 },
+  { id: 'p14', name: 'Bar', type: 'bar', x: 46, y: 54 },
+  { id: 'p15', name: 'Bar', type: 'bar', x: 48, y: 57 },
+  { id: 'p16', name: 'Bar', type: 'bar', x: 64, y: 54 },
+  { id: 'p17', name: 'Bar', type: 'bar', x: 56, y: 80 },
+  { id: 'p18', name: 'Bar', type: 'bar', x: 52, y: 81 },
+  { id: 'p19', name: 'Bar', type: 'bar', x: 49, y: 82 },
+  { id: 'p20', name: 'Mat', type: 'food', x: 26, y: 33 },
+  { id: 'p21', name: 'Mat', type: 'food', x: 43, y: 42 },
+  { id: 'p22', name: 'Mat', type: 'food', x: 67, y: 45 },
+  { id: 'p23', name: 'Mat', type: 'food', x: 84, y: 39 },
+  { id: 'p24', name: 'Mat', type: 'food', x: 24, y: 53 },
+  { id: 'p25', name: 'Mat', type: 'food', x: 24, y: 57 },
+  { id: 'p26', name: 'Mat', type: 'food', x: 27, y: 60 },
+  { id: 'p27', name: 'Mat', type: 'food', x: 42, y: 85 },
+  { id: 'p28', name: 'Toalett', type: 'toilet', x: 58, y: 20 },
+  { id: 'p29', name: 'Toalett', type: 'toilet', x: 58, y: 40 },
+  { id: 'p30', name: 'Toalett', type: 'toilet', x: 86, y: 73 },
+  { id: 'p31', name: 'Toalett', type: 'toilet', x: 28, y: 88 },
+  { id: 'p32', name: 'Inngang / utgang', type: 'entrance', x: 16, y: 82 },
+  { id: 'p33', name: 'Utgang', type: 'entrance', x: 62, y: 12 },
+  { id: 'p34', name: 'Utgang', type: 'entrance', x: 80, y: 79 },
+  { id: 'p35', name: 'Camp', type: 'other', x: 85, y: 34 },
+  { id: 'p36', name: 'Market', type: 'other', x: 52, y: 30 },
+  { id: 'p37', name: 'Vinhagen', type: 'other', x: 57, y: 35 },
+  { id: 'p38', name: 'Tivoli', type: 'other', x: 69, y: 38 },
+  { id: 'p39', name: 'VIP-område', type: 'other', x: 62, y: 49 },
+  { id: 'p40', name: 'Blind Spot', type: 'other', x: 72, y: 70 },
+  { id: 'p41', name: 'Black Diamond', type: 'other', x: 70, y: 77 },
+  { id: 'p42', name: 'Merchandise', type: 'other', x: 35, y: 74 },
+  { id: 'p43', name: 'Førstehjelp', type: 'other', x: 36, y: 86 },
+  { id: 'p44', name: 'Tilgjengelighet (HC)', type: 'other', x: 27, y: 41 },
+  { id: 'p45', name: 'Tilgjengelighet (HC)', type: 'other', x: 77, y: 51 },
+  { id: 'p46', name: 'Møtepunkt – inngang', type: 'meet', x: 20, y: 79 },
+  { id: 'p47', name: 'Møtepunkt – midten', type: 'meet', x: 45, y: 47 }
 ];
 
 function validatePin(p) {
   if (!p || typeof p.name !== 'string' || !p.name.trim() || p.name.length > 60) return 'Ugyldig navn';
   if (!VALID_TYPES.includes(p.type)) return 'Ugyldig type';
-  const lat = Number(p.lat), lng = Number(p.lng);
-  // Grov sjekk: innenfor Oslo-området (hindrer feilklikk langt unna)
-  if (isNaN(lat) || lat < 59.8 || lat > 60.0 || isNaN(lng) || lng < 10.6 || lng > 10.9) return 'Ugyldig posisjon';
+  const x = Number(p.x), y = Number(p.y);
+  if (isNaN(x) || x < 0 || x > 100 || isNaN(y) || y < 0 || y > 100) return 'Ugyldig posisjon';
   return null;
 }
 
 async function getPins(store) {
-  let pins = await store.get('current-v2', { type: 'json' });
-  if (!pins) { pins = DEFAULT_PINS; await store.setJSON('current-v2', pins); }
+  let pins = await store.get('current-v3', { type: 'json' });
+  if (!pins) { pins = DEFAULT_PINS; await store.setJSON('current-v3', pins); }
   return pins;
 }
 
@@ -83,14 +108,14 @@ export default async (req) => {
 
     if (body.action === 'reset') {
       pins = DEFAULT_PINS;
-      await store.setJSON('current-v2', pins);
+      await store.setJSON('current-v3', pins);
       return json({ ok: true, pins });
     }
 
     if (body.action === 'delete') {
       if (!body.id) return json({ error: 'Mangler id' }, 400);
       pins = pins.filter(p => p.id !== body.id);
-      await store.setJSON('current-v2', pins);
+      await store.setJSON('current-v3', pins);
       return json({ ok: true, pins });
     }
 
@@ -101,12 +126,12 @@ export default async (req) => {
         id: body.pin.id || ('pin-' + Date.now() + '-' + Math.floor(Math.random() * 1000)),
         name: body.pin.name.trim(),
         type: body.pin.type,
-        lat: Math.round(Number(body.pin.lat) * 1e6) / 1e6,
-        lng: Math.round(Number(body.pin.lng) * 1e6) / 1e6
+        x: Math.round(Number(body.pin.x) * 10) / 10,
+        y: Math.round(Number(body.pin.y) * 10) / 10
       };
       const idx = pins.findIndex(p => p.id === clean.id);
       if (idx >= 0) pins[idx] = clean; else pins.push(clean);
-      await store.setJSON('current-v2', pins);
+      await store.setJSON('current-v3', pins);
       return json({ ok: true, pins, pin: clean });
     }
 
